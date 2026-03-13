@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumen — Clinical AI Department</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg:         #030810;
+  --panel:      #060d1a;
+  --border:     #112240;
+  --border2:    #1c3a66;
+  --cyan:       #00d4ff;
+  --green:      #00ff9f;
+  --amber:      #ffaa00;
+  --red:        #ff3355;
+  --purple:     #bb66ff;
+  --pink:       #ff4488;
+  --blue:       #4499ff;
+  --text:       #7aa8c8;
+  --text-hi:    #c8e8ff;
+  --mono:       'Share Tech Mono', monospace;
+  --ui:         'Rajdhani', sans-serif;
+}
+
+html, body {
+  width:100%; height:100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ui);
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ── TOP BAR ── */
+#topbar {
+  height: 52px;
+  background: rgba(6,13,26,0.97);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  gap: 14px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+#logo {
+  display: flex; align-items: center; gap: 10px;
+  margin-right: 8px;
+}
+.logo-mark {
+  width: 32px; height: 32px;
+  background: var(--cyan);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 15px; font-weight: bold;
+  color: var(--bg);
+}
+.logo-text .name {
+  font-family: var(--mono); font-size: 14px; letter-spacing: 4px;
+  color: var(--text-hi); line-height: 1;
+}
+.logo-text .sub {
+  font-size: 9px; letter-spacing: 2px; color: var(--text);
+  margin-top: 1px;
+}
+
+.chip {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(0,212,255,0.04);
+  border: 1px solid rgba(0,212,255,0.18);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-family: var(--mono); font-size: 11px;
+}
+.chip .lbl { color: var(--text); }
+.chip .val { color: var(--cyan); }
+
+.pulse-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+#topbar-right { margin-left: auto; display:flex; align-items:center; gap:14px; }
+
+.clock {
+  font-family: var(--mono); font-size: 15px; color: var(--cyan);
+  letter-spacing: 2px;
+}
+
+/* ── MAIN ── */
+#main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── CANVAS ── */
+#canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+#gc { display: block; cursor: crosshair; }
+
+/* ── TOOLTIP ── */
+#tooltip {
+  position: absolute;
+  background: rgba(6,13,26,0.95);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  padding: 6px 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--cyan);
+  pointer-events: none;
+  display: none;
+  z-index: 20;
+  letter-spacing: 1px;
+}
+
+/* ── RIGHT PANEL ── */
+#rpanel {
+  width: 258px;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ph {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--cyan);
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.ph::before {
+  content:''; width:3px; height:13px;
+  background: var(--cyan); display: block;
+  border-radius: 2px;
+}
+
+#agent-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+#agent-list::-webkit-scrollbar { width: 2px; }
+#agent-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+.acard {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 9px 11px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.acard:hover { border-color: rgba(0,212,255,0.3); background: rgba(0,212,255,0.05); }
+.acard.on   { border-color: rgba(0,212,255,0.45); background: rgba(0,212,255,0.07); }
+
+.acard-top {
+  display: flex; align-items: center; gap: 7px; margin-bottom: 4px;
+}
+.adot {
+  width:8px; height:8px; border-radius: 50%; flex-shrink: 0;
+}
+.aname {
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  color: var(--text-hi); flex: 1;
+}
+.abadge {
+  font-size: 8px; font-family: var(--mono);
+  padding: 2px 5px; border-radius: 3px; letter-spacing: 1px;
+}
+.b-work { background:rgba(0,255,159,0.1); color:var(--green); border:1px solid rgba(0,255,159,0.3); }
+.b-walk { background:rgba(255,170,0,0.1); color:var(--amber); border:1px solid rgba(255,170,0,0.3); }
+.b-idle { background:rgba(120,168,200,0.08); color:var(--text); border:1px solid rgba(120,168,200,0.18); }
+
+.arole  { font-size: 10px; color: var(--text); margin-bottom: 3px; letter-spacing: 0.5px; }
+.atask  { font-size: 10px; color: var(--cyan); font-family:var(--mono); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; opacity:0.8; }
+
+/* Task progress bar */
+.aprog {
+  height: 2px; background: var(--border); border-radius: 1px;
+  margin-top: 6px; overflow: hidden;
+}
+.aprog-fill {
+  height: 100%; border-radius: 1px;
+  transition: width 0.3s;
+}
+
+/* ── BOTTOM LOG ── */
+#bpanel {
+  height: 140px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+#log-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 14px 6px;
+}
+#log-list::-webkit-scrollbar { width: 2px; }
+#log-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+.lentry {
+  display: flex; align-items: baseline; gap: 9px;
+  padding: 2.5px 0;
+  font-family: var(--mono); font-size: 10.5px;
+  border-bottom: 1px solid rgba(17,34,64,0.4);
+}
+.ltime { color: rgba(120,168,200,0.4); min-width: 52px; }
+.lagent { min-width: 46px; font-weight: bold; }
+.lmsg { color: var(--text); flex: 1; opacity:0.9; }
+
+/* ── MODAL ── */
+#modal {
+  position: fixed; inset:0;
+  background: rgba(3,8,16,0.88);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(5px);
+}
+#modal.hidden { display: none; }
+
+.modal-box {
+  width: 580px;
+  background: #07101f;
+  border: 1px solid var(--border2);
+  border-radius: 9px;
+  overflow: hidden;
+  box-shadow: 0 0 80px rgba(0,212,255,0.1), 0 0 0 1px rgba(0,212,255,0.05);
+}
+
+.mh {
+  display: flex; align-items: center; gap: 12px;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,212,255,0.025);
+}
+.mh-icon { font-size: 22px; }
+.mh-title { flex:1; }
+.mh-title h2 {
+  font-family: var(--mono); font-size: 13px; letter-spacing: 2px;
+  color: var(--text-hi); font-weight:normal;
+}
+.mh-title p { font-size:11px; color:var(--text); margin-top:2px; }
+
+.mbtn {
+  background:none; border:1px solid var(--border); color:var(--text);
+  width:26px; height:26px; border-radius:4px; cursor:pointer; font-size:13px;
+  transition: all 0.15s;
+}
+.mbtn:hover { border-color:var(--red); color:var(--red); }
+
+.mb { padding: 15px 18px; }
+
+.magent {
+  display:flex; align-items:center; gap:9px;
+  padding:9px 11px;
+  background:rgba(255,255,255,0.025);
+  border:1px solid var(--border); border-radius:4px;
+  margin-bottom: 11px;
+}
+.madot { width:9px; height:9px; border-radius:50%; }
+.maname { font-family:var(--mono); font-size:11px; color:var(--text-hi); flex:1; }
+.live-tag {
+  font-family:var(--mono); font-size:9px; color:var(--green);
+  border:1px solid rgba(0,255,159,0.35); padding:2px 6px; border-radius:3px;
+  animation:blink 1.4s infinite; letter-spacing:1px;
+}
+
+.ai-out {
+  background:#020710;
+  border:1px solid rgba(0,212,255,0.12); border-radius:4px;
+  padding:12px; font-family:var(--mono); font-size:10.5px; color:var(--green);
+  min-height:130px; max-height:180px; overflow-y:auto; line-height:1.65;
+  white-space:pre-wrap;
+}
+.ai-out::-webkit-scrollbar { width:2px; }
+.ai-out::-webkit-scrollbar-thumb { background:var(--border); }
+
+.mstats { display:flex; gap:8px; margin-top:11px; }
+.ms {
+  flex:1; background:rgba(255,255,255,0.02); border:1px solid var(--border);
+  border-radius:4px; padding:8px; text-align:center;
+}
+.ms .v { font-family:var(--mono); font-size:17px; color:var(--cyan); display:block; }
+.ms .l { font-size:9px; color:var(--text); letter-spacing:1px; margin-top:1px; }
+
+/* Run task button */
+.run-btn {
+  margin-top: 11px; width:100%;
+  background: rgba(0,212,255,0.07);
+  border: 1px solid rgba(0,212,255,0.3);
+  color: var(--cyan); font-family:var(--mono); font-size:11px;
+  letter-spacing:2px; padding:9px;
+  border-radius:4px; cursor:pointer;
+  transition: all 0.2s;
+}
+.run-btn:hover { background: rgba(0,212,255,0.15); border-color: var(--cyan); }
+.run-btn:disabled { opacity:0.4; cursor:default; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div id="logo">
+      <div class="logo-mark">L</div>
+      <div class="logo-text">
+        <div class="name">LUMEN</div>
+        <div class="sub">CLINICAL AI PLATFORM</div>
+      </div>
+    </div>
+
+    <div class="chip"><span class="lbl">DEPT</span><span class="val">CARDIOLOGY · ICU</span></div>
+    <div class="chip"><div class="pulse-dot"></div><span class="lbl">AGENTS</span><span class="val" id="sc-agents">6 ACTIVE</span></div>
+    <div class="chip"><span class="lbl">TASKS</span><span class="val" id="sc-tasks">0</span></div>
+    <div class="chip"><span class="lbl">UPTIME</span><span class="val" id="sc-uptime">00:00:00</span></div>
+
+    <div id="topbar-right">
+      <div class="chip"><span class="lbl">ENV</span><span class="val">PROTOTYPE v0.1</span></div>
+      <div class="clock" id="clock">00:00:00</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+
+    <!-- CANVAS -->
+    <div id="canvas-wrap">
+      <canvas id="gc"></canvas>
+      <div id="tooltip"></div>
+    </div>
+
+    <!-- AGENT PANEL -->
+    <div id="rpanel">
+      <div class="ph">AGENT ROSTER</div>
+      <div id="agent-list"></div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- LOG -->
+  <div id="bpanel">
+    <div class="ph">ACTIVITY LOG</div>
+    <div id="log-list"></div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- STATION MODAL -->
+<div id="modal" class="hidden">
+  <div class="modal-box">
+    <div class="mh">
+      <span class="mh-icon" id="m-icon">💻</span>
+      <div class="mh-title">
+        <h2 id="m-title">STATION</h2>
+        <p id="m-sub">Task type</p>
+      </div>
+      <button class="mbtn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="mb">
+      <div class="magent">
+        <div class="madot" id="m-adot"></div>
+        <span class="maname" id="m-aname">Agent</span>
+        <span class="live-tag">● LIVE</span>
+      </div>
+      <div class="ai-out" id="m-out"></div>
+      <div class="mstats">
+        <div class="ms"><span class="v" id="ms-tasks">0</span><div class="l">TASKS</div></div>
+        <div class="ms"><span class="v" id="ms-acc">—</span><div class="l">ACCURACY</div></div>
+        <div class="ms"><span class="v" id="ms-lat">—</span><div class="l">LATENCY</div></div>
+      </div>
+      <!--
+        TODO (Lumen Integration):
+        Replace simulateOutput() with a real Lumen Agent API call:
+        POST /api/v1/agents/{agentId}/run  { task_type, context }
+        Then stream the SSE response into #m-out.
+      -->
+      <button class="run-btn" id="run-btn" onclick="runTask()">▶ DISPATCH NEW TASK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+const TW = 68;   // iso tile width
+const TH = 34;   // iso tile height
+const GW = 16;   // grid columns
+const GH = 12;   // grid rows
+const SPEED = 0.038;
+
+// ═══════════════════════════════════════════════════════════════
+// STATIONS
+// ═══════════════════════════════════════════════════════════════
+const STATIONS = [
+  {
+    id:'ehr', name:'EHR TERMINAL', icon:'🖥️',
+    gx:2, gy:2,
+    c:'#00d4ff', cd:'#006888', cdd:'#003c4f',
+    taskLabel:'Electronic Health Records',
+    outputs:[
+      'EHR BATCH PROCESSING — 12 records\n→ Patient #4782: Cardiology admission\n  · ICD-10 mapped: I21.9 (STEMI)\n  · SNOMED: 57054005\n  · Drug interaction: Warfarin ↔ Aspirin [FLAG]\n  · Care gap: follow-up not scheduled\n→ Patient #4783–4793: Processed\n✓ Batch complete. 3 clinical alerts issued.',
+      'ORDER VERIFICATION — Dr. Patel queue\n→ Metoprolol 25mg BID (weight-based ✓)\n→ Furosemide 40mg IV × 3 doses\n  · Prerequisite: K+ 3.8 mEq/L (range OK)\n→ Heparin drip: protocol selected (STEMI)\n→ Allergy check: NKDA ✓\n✓ All orders verified. Pharmacy notified.',
+      'INSURANCE PRE-AUTH CHECK\n→ Procedure: Left heart cath + PCI (CPT 92941)\n→ Payer: BlueCross Anthem PPO\n→ Clinical criteria evaluation:\n  · STEMI: MET ✓  · EF <40%: MET ✓\n  · Stress test: NOT REQUIRED (emergent) ✓\n→ Prior auth #: PA-2024-88821\n✓ Authorization APPROVED. OR scheduled.',
+    ],
+    stats:{tasks:0, acc:'99.1%', lat:'1.2s'}
+  },
+  {
+    id:'nlp', name:'NLP ENGINE', icon:'🧠',
+    gx:7, gy:2,
+    c:'#00ff9f', cd:'#006644', cdd:'#003322',
+    taskLabel:'Natural Language Processing',
+    outputs:[
+      'NLP PIPELINE — Batch: 47 clinical notes\n→ Tokenization: 21,340 tokens\n→ NER Results:\n  · Medications:  89 entities\n  · Diagnoses:   124 entities\n  · Procedures:   99 entities\n→ Negation detected: 23 findings excluded\n→ Temporal extraction: timeline mapped\n✓ Structured output sent to EHR integration.',
+      'RADIOLOGY REPORT NLP — #RD-9932\n→ Impression section parsed\n→ Key findings extracted:\n  · "bilateral pleural effusions" → FINDING\n  · "cardiomegaly" → FINDING (moderate)\n  · "no pneumothorax" → NEGATED ✓\n→ Severity: MODERATE\n→ Auto-route: Dr. Kim (Cardiology) notified\n✓ Priority flag set. EHR updated.',
+      'PATIENT FEEDBACK ANALYSIS — 203 responses\n→ Sentiment scoring (VADER + custom model)\n  · Positive: 153 (75.4%)\n  · Neutral:   38 (18.7%)\n  · Negative:  12 (5.9%)\n→ Flagged themes: pain management, wait time\n→ QI report generated\n✓ Forwarded to Patient Experience committee.',
+    ],
+    stats:{tasks:0, acc:'97.8%', lat:'0.8s'}
+  },
+  {
+    id:'deid', name:'DE-ID STATION', icon:'🔐',
+    gx:12, gy:2,
+    c:'#ffaa00', cd:'#886600', cdd:'#554400',
+    taskLabel:'HIPAA De-Identification (Safe Harbor)',
+    outputs:[
+      'DE-ID PASS — Dataset: ClinicalNotes_Q4\n→ Records: 1,847 | PHI scan initiated\n→ Entities targeted:\n  NAME · DOB · MRN · ADDRESS · PHONE · SSN\n→ Method: Safe Harbor (45 CFR §164.514(b))\n→ PHI tokens redacted: 8,341\n→ Synthetic surrogates injected: ✓\n✓ Dataset cleared. IRB export package ready.',
+      'DICOM METADATA STRIP — 340 files\n→ PHI in headers: PatientName, StudyDate,\n  InstitutionName, PhysicianName detected\n→ Pixel burn-in audit: 2 files flagged\n  (PHI visible in scan margins)\n→ 338 files auto-cleared\n→ 2 files → manual review queue\n✓ Compliance batch delivered.',
+      'RE-ID RISK ASSESSMENT\n→ Quasi-identifiers: age, sex, 5-digit zip\n→ k-anonymity: k = 12  [PASS ≥ 5] ✓\n→ ℓ-diversity: sensitive attr diversity ✓\n→ t-closeness: 0.18 [within threshold] ✓\n→ Expert determination method: SATISFIED\n✓ Dataset approved for research release.',
+    ],
+    stats:{tasks:0, acc:'100%', lat:'2.1s'}
+  },
+  {
+    id:'imaging', name:'IMAGING AI', icon:'🩻',
+    gx:2, gy:8,
+    c:'#bb66ff', cd:'#662299', cdd:'#441166',
+    taskLabel:'DICOM / Radiology Analysis',
+    outputs:[
+      'DICOM ANALYSIS — CT Chest w/contrast\n→ Model: LumenVision-Thoracic v2.3\n→ Segmentation: lungs · vessels · lymph nodes\n→ Findings:\n  · LLL consolidation 12mm [SUSPICIOUS]\n  · No pneumothorax detected ✓\n  · Mild pericardial thickening\n→ Confidence: 94.7%\n→ Comparison to prior: NEW finding\n✓ STAT flag set. Radiologist review queued.',
+      'ECHO REPORT — 4-chamber, 240 frames\n→ LVEF calculated: 42% [REDUCED]\n→ Wall motion: anteroseptal hypokinesis\n→ Valves: mild MR, no AS detected\n→ Delta vs 6-month prior: 58% → 42%\n→ Clinical significance: HIGH\n✓ Change alert → Cardiology attending.',
+      'CHEST X-RAY BATCH — 28 images\n→ AI sweep complete\n  · Normal:   19\n  · Abnormal:  9\n→ Findings: 4 pneumonia, 3 effusions,\n  2 cardiomegaly\n→ URGENT: Room 412 — possible tension PTX\n✓ Rapid response paged. Chest team alerted.',
+    ],
+    stats:{tasks:0, acc:'96.3%', lat:'3.4s'}
+  },
+  {
+    id:'notes', name:'CLINICAL NOTES', icon:'📋',
+    gx:7, gy:8,
+    c:'#ff4488', cd:'#aa1155', cdd:'#770033',
+    taskLabel:'Ambient Scribe & Coding',
+    outputs:[
+      'AMBIENT SCRIBE — Dr. Patel / Pt #3391\n→ Audio: 18 min 42 sec processed\n→ SOAP note generated:\n  S: 62yo M, worsening dyspnea × 3 days\n  O: BP 142/88 · HR 98 · SpO2 94% RA\n     Bilateral crackles · 2+ LE edema\n  A: Decompensated CHF, NYHA Class III\n  P: IV Lasix 40mg · 1.5L fluid restrict\n     BMP, BNP, echo ordered\n✓ Awaiting physician attestation.',
+      'ICD-10 CODING — Inpatient batch × 8\n→ Diagnoses coded: 34 codes applied\n→ CC/MCC capture rate: 87% [above avg]\n→ Potential missed CC identified:\n  Protein-calorie malnutrition (E46)\n→ Physician query generated\n→ DRG impact: +$4,200 expected\n✓ Coding complete. CDI team notified.',
+      'PRIOR AUTH — Left heart catheterization\n→ Extracting clinical criteria from notes...\n→ Supporting docs compiled: 12 items\n→ Payer criteria check: 6/7 MET\n→ Gap: recent stress test result needed\n  (waived — emergent indication)\n→ PA #: PA-20241103-4892\n✓ Submitted. Estimated approval: 24hr.',
+    ],
+    stats:{tasks:0, acc:'98.5%', lat:'1.7s'}
+  },
+  {
+    id:'vitals', name:'VITALS MONITOR', icon:'💓',
+    gx:12, gy:8,
+    c:'#4499ff', cd:'#224488', cdd:'#112255',
+    taskLabel:'Smart Vitals & Alert Engine',
+    outputs:[
+      'REAL-TIME SWEEP — ICU Floor B (12 pts)\n→ Normal range: 9 patients ✓\n→ ⚠ ALERTS ACTIVE:\n  · Rm 411: HR 128 sustained (>30 min)\n  · Rm 415: SpO2 88% — O2 adjusted\n  · Rm 407: BP 195/110 — HTN urgency\n→ Escalation: Rooms 411 & 407\n✓ Rapid response + charge RN notified.',
+      'SEPSIS SURVEILLANCE — 6hr interval\n→ Patients screened: 47 (Sepsis-3)\n→ SOFA ≥2 rise: 3 patients flagged\n→ Lactate >2.0 pending: 1 patient\n→ Hour-1 bundle initiated: Patient #2847\n  · Blood cultures × 2 ✓\n  · Broad-spectrum abx ordered ✓\n✓ Sepsis alerts documented. ICU notified.',
+      'PREDICTIVE DETERIORATION — Patient #5501\n→ 4-hour risk score: HIGH (78th %ile)\n→ Contributing signals:\n  · RR: 14 → 22 over 6 hours ▲\n  · UO: <0.3 mL/kg/hr ▼\n  · Lactate trend: 1.1 → 1.8 ▲\n→ Early Warning Score: 7 [threshold ≥5]\n✓ Proactive escalation. Attending briefed.',
+    ],
+    stats:{tasks:0, acc:'99.9%', lat:'0.1s'}
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// AGENTS
+// ═══════════════════════════════════════════════════════════════
+const AGENT_DEFS = [
+  { id:'aria', name:'ARIA', role:'EHR Specialist',    color:'#00d4ff', home:'ehr'     },
+  { id:'nova', name:'NOVA', role:'NLP Processor',     color:'#00ff9f', home:'nlp'     },
+  { id:'deid', name:'DEID', role:'De-ID Agent',       color:'#ffaa00', home:'deid'    },
+  { id:'iris', name:'IRIS', role:'Imaging Analyst',   color:'#bb66ff', home:'imaging' },
+  { id:'clio', name:'CLIO', role:'Clinical Scribe',   color:'#ff4488', home:'notes'   },
+  { id:'vega', name:'VEGA', role:'Vitals Sentinel',   color:'#4499ff', home:'vitals'  },
+];
+
+// Cross-task routing (collaborative workflows)
+const CROSS = [
+  { from:'aria', to:'nlp',     msg:'Routing EHR note batch → NLP entity extraction' },
+  { from:'nova', to:'deid',    msg:'Sending processed text → De-ID before research export' },
+  { from:'iris', to:'notes',   msg:'Attaching imaging findings → Clinical note builder' },
+  { from:'deid', to:'ehr',     msg:'Anonymized dataset → EHR analytics warehouse' },
+  { from:'clio', to:'ehr',     msg:'Scribed note ready → Pushing to EHR for attestation' },
+  { from:'vega', to:'nlp',     msg:'Alert text → NLP severity classification' },
+  { from:'nova', to:'vitals',  msg:'NLP-extracted vitals trend → Monitoring engine' },
+  { from:'iris', to:'deid',    msg:'DICOM metadata → De-ID pipeline for research' },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// CANVAS + ISO MATH
+// ═══════════════════════════════════════════════════════════════
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
+let CW, CH, OX, OY;
+
+function resize() {
+  const wrap = document.getElementById('canvas-wrap');
+  CW = wrap.clientWidth;
+  CH = wrap.clientHeight;
+  canvas.width = CW;
+  canvas.height = CH;
+  OX = CW / 2 + 20;
+  OY = 55;
+}
+
+function ts(gx, gy) { // grid → screen (returns top-tip of diamond)
+  return {
+    x: (gx - gy) * (TW / 2) + OX,
+    y: (gx + gy) * (TH / 2) + OY
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DRAW HELPERS
+// ═══════════════════════════════════════════════════════════════
+
+function tile(gx, gy, fill, stroke) {
+  const {x, y} = ts(gx, gy);
+  const hw = TW/2, hh = TH/2;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x+hw, y+hh);
+  ctx.lineTo(x, y+TH);
+  ctx.lineTo(x-hw, y+hh);
+  ctx.closePath();
+  if (fill)   { ctx.fillStyle = fill;   ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 0.6; ctx.stroke(); }
+}
+
+function box(gx, gy, bh, topC, leftC, rightC, outline) {
+  const {x, y} = ts(gx, gy);
+  const hw = TW/2, hh = TH/2;
+  // right face
+  ctx.beginPath();
+  ctx.moveTo(x+hw, y+hh-bh);
+  ctx.lineTo(x,    y+TH-bh);
+  ctx.lineTo(x,    y+TH);
+  ctx.lineTo(x+hw, y+hh);
+  ctx.closePath();
+  ctx.fillStyle = rightC; ctx.fill();
+  if (outline) { ctx.strokeStyle=outline; ctx.lineWidth=0.5; ctx.stroke(); }
+  // left face
+  ctx.beginPath();
+  ctx.moveTo(x-hw, y+hh-bh);
+  ctx.lineTo(x,    y+TH-bh);
+  ctx.lineTo(x,    y+TH);
+  ctx.lineTo(x-hw, y+hh);
+  ctx.closePath();
+  ctx.fillStyle = leftC; ctx.fill();
+  if (outline) { ctx.strokeStyle=outline; ctx.lineWidth=0.5; ctx.stroke(); }
+  // top face
+  ctx.beginPath();
+  ctx.moveTo(x,    y-bh);
+  ctx.lineTo(x+hw, y+hh-bh);
+  ctx.lineTo(x,    y+TH-bh);
+  ctx.lineTo(x-hw, y+hh-bh);
+  ctx.closePath();
+  ctx.fillStyle = topC; ctx.fill();
+  if (outline) { ctx.strokeStyle=outline; ctx.lineWidth=0.5; ctx.stroke(); }
+}
+
+// Desk/station: inset box with screen on top
+function drawStation(st, tick) {
+  const {gx, gy, c, cd, cdd, id} = st;
+  const {x, y} = ts(gx, gy);
+  const hw = TW*0.42, hh = TH*0.42;
+  const dh = 17; // desk height
+
+  const wAgent = G.agents.find(a => a.state==='working' && a.tStation===id);
+  const glow = wAgent ? 0.55 + 0.45*Math.sin(G.tick*0.09) : 0.18;
+
+  // Floor under station
+  tile(gx, gy, '#0c1a2e', '#162a48');
+
+  // Desk box (inset)
+  // right face
+  ctx.beginPath();
+  ctx.moveTo(x+hw, y+hh-dh); ctx.lineTo(x, y+2*hh-dh);
+  ctx.lineTo(x, y+2*hh); ctx.lineTo(x+hw, y+hh);
+  ctx.closePath();
+  ctx.fillStyle = cdd; ctx.fill();
+  ctx.strokeStyle = c+'55'; ctx.lineWidth=0.6; ctx.stroke();
+
+  // left face
+  ctx.beginPath();
+  ctx.moveTo(x-hw, y+hh-dh); ctx.lineTo(x, y+2*hh-dh);
+  ctx.lineTo(x, y+2*hh); ctx.lineTo(x-hw, y+hh);
+  ctx.closePath();
+  ctx.fillStyle = cd; ctx.fill();
+  ctx.strokeStyle = c+'55'; ctx.lineWidth=0.6; ctx.stroke();
+
+  // top face
+  ctx.beginPath();
+  ctx.moveTo(x, y-dh); ctx.lineTo(x+hw, y+hh-dh);
+  ctx.lineTo(x, y+2*hh-dh); ctx.lineTo(x-hw, y+hh-dh);
+  ctx.closePath();
+  ctx.fillStyle = c; ctx.globalAlpha = 0.25+glow*0.35; ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = c+'88'; ctx.lineWidth=0.8; ctx.stroke();
+
+  // Monitor on desk
+  const mh = 11; // monitor height
+  const my = y - dh - mh;
+  const mw = 8;
+  const mhh = 5;
+  // monitor body (small iso box)
+  ctx.beginPath();
+  ctx.moveTo(x-mw, my+mhh-mh); ctx.lineTo(x, my+2*mhh-mh);
+  ctx.lineTo(x, my+2*mhh); ctx.lineTo(x-mw, my+mhh);
+  ctx.closePath();
+  ctx.fillStyle = cdd; ctx.globalAlpha=0.9; ctx.fill(); ctx.globalAlpha=1;
+
+  ctx.beginPath();
+  ctx.moveTo(x+mw, my+mhh-mh); ctx.lineTo(x, my+2*mhh-mh);
+  ctx.lineTo(x, my+2*mhh); ctx.lineTo(x+mw, my+mhh);
+  ctx.closePath();
+  ctx.fillStyle = cd; ctx.globalAlpha=0.9; ctx.fill(); ctx.globalAlpha=1;
+
+  // Screen top (glowing)
+  ctx.beginPath();
+  ctx.moveTo(x, my-mh); ctx.lineTo(x+mw, my+mhh-mh);
+  ctx.lineTo(x, my+2*mhh-mh); ctx.lineTo(x-mw, my+mhh-mh);
+  ctx.closePath();
+  if (wAgent) {
+    ctx.shadowColor = c; ctx.shadowBlur = 14;
+    ctx.fillStyle = c; ctx.globalAlpha = 0.85+0.15*Math.sin(G.tick*0.12);
+  } else {
+    ctx.fillStyle = '#1a3050'; ctx.globalAlpha = 0.7;
+  }
+  ctx.fill();
+  ctx.globalAlpha=1; ctx.shadowBlur=0;
+
+  // Station label above
+  ctx.font = '8px var(--mono)';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = c;
+  ctx.globalAlpha = 0.85;
+  ctx.fillText(st.name, x, y - dh - 24);
+  ctx.globalAlpha = 1;
+
+  // Activity pulse indicator
+  if (wAgent) {
+    const pr = 3.5 + 2*Math.sin(G.tick*0.12);
+    ctx.beginPath();
+    ctx.arc(x, y - dh - 31, pr, 0, Math.PI*2);
+    ctx.fillStyle = c;
+    ctx.globalAlpha = 0.5+0.5*Math.sin(G.tick*0.12);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// Draw isometric person
+function drawAgent(ag, tick) {
+  const s = ts(ag.x, ag.y);
+  const px = s.x;
+  const py = s.y + TH/2 - 2;
+
+  const bob = ag.state==='working' ? Math.sin(tick*0.18)*2 : 0;
+  const walk = ag.state==='walking' ? Math.sin(tick*0.22)*2.5 : 0;
+  const oy = py - 36 + bob + walk;
+
+  // Shadow
+  ctx.beginPath();
+  ctx.ellipse(px, py, 9, 4, 0, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fill();
+
+  // Legs (alternating when walking)
+  const legSwing = ag.state==='walking' ? Math.sin(tick*0.22)*3 : 0;
+  ctx.fillStyle = '#111e30';
+  ctx.fillRect(px - 5 + legSwing, oy+22, 4, 9);
+  ctx.fillRect(px + 1 - legSwing, oy+22, 4, 9);
+
+  // Lab coat body
+  ctx.fillStyle = '#deeeff';
+  ctx.beginPath();
+  ctx.roundRect(px-7, oy+10, 14, 13, 2);
+  ctx.fill();
+
+  // Color patch (agent-specific scrub top under coat)
+  if (ag.state==='working') {
+    ctx.shadowColor = ag.color; ctx.shadowBlur = 10;
+  }
+  ctx.fillStyle = ag.color;
+  ctx.fillRect(px-3, oy+12, 6, 9);
+  ctx.shadowBlur = 0;
+
+  // Arms
+  ctx.fillStyle = '#deeeff';
+  ctx.fillRect(px-11, oy+11, 4, 7);
+  ctx.fillRect(px+7, oy+11, 4, 7);
+
+  // Neck
+  ctx.fillStyle = '#e8c9a0';
+  ctx.fillRect(px-2, oy+6, 4, 5);
+
+  // Head
+  ctx.shadowColor = ag.color; ctx.shadowBlur = ag.state==='working'? 12:4;
+  ctx.beginPath();
+  ctx.arc(px, oy+4, 6, 0, Math.PI*2);
+  ctx.fillStyle = '#e8c9a0';
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Hair / cap
+  ctx.beginPath();
+  ctx.arc(px, oy+2, 6, -Math.PI, 0);
+  ctx.fillStyle = ag.color;
+  ctx.fill();
+
+  // Name label
+  ctx.font = 'bold 8px var(--mono)';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = ag.color;
+  ctx.shadowColor = ag.color; ctx.shadowBlur = 6;
+  ctx.fillText(ag.name, px, oy-3);
+  ctx.shadowBlur = 0;
+
+  // Working particles
+  if (ag.state==='working') {
+    for (const p of ag.particles) {
+      ctx.beginPath();
+      ctx.arc(px+p.ox, oy - p.life*24, 1.5, 0, Math.PI*2);
+      ctx.fillStyle = ag.color;
+      ctx.globalAlpha = Math.max(0, 1-p.life);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+
+function drawPath(ag) {
+  if (ag.state !== 'walking') return;
+  const from = ts(ag.x, ag.y);
+  const to   = ts(ag.tx, ag.ty);
+  ctx.beginPath();
+  ctx.moveTo(from.x, from.y + TH/2);
+  ctx.lineTo(to.x,   to.y   + TH/2);
+  ctx.strokeStyle = ag.color + '44';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 5]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FLOOR + WALLS
+// ═══════════════════════════════════════════════════════════════
+
+function renderRoom() {
+  // Painter's order: render tiles from back to front
+  for (let sum=0; sum<=GW+GH-2; sum++) {
+    for (let gx=0; gx<GW; gx++) {
+      const gy = sum-gx;
+      if (gy<0||gy>=GH) continue;
+
+      if (gy===0) {
+        // Back wall
+        box(gx,gy,38,'#0c1c30','#060f1e','#080e20','#1a3050');
+      } else if (gx===0) {
+        // Left wall
+        box(gx,gy,28,'#0a1828','#04090e','#050c14','#142030');
+      } else if (gx===GW-1) {
+        // Right wall
+        box(gx,gy,28,'#0a1828','#050c14','#04090e','#142030');
+      } else if (gy===GH-1) {
+        // Front floor edge (no wall - open plan)
+        const alt = (gx+gy)%2===0;
+        tile(gx, gy, alt ? '#0b1826' : '#091420', '#142030');
+      } else {
+        // Main floor
+        const alt = (gx+gy)%2===0;
+        const isPath = (gy===5 || (gx===4||gx===9));
+        if (isPath) {
+          tile(gx, gy, '#0d1e34', '#1a3a60');
+          // Subtle path marking
+          const {x,y} = ts(gx,gy);
+          ctx.beginPath();
+          ctx.arc(x, y+TH/2, 1.5, 0, Math.PI*2);
+          ctx.fillStyle = '#1a3a60';
+          ctx.globalAlpha=0.6; ctx.fill(); ctx.globalAlpha=1;
+        } else {
+          tile(gx, gy, alt ? '#0c1b2e' : '#0a1626', '#132240');
+        }
+      }
+    }
+  }
+
+  // Floor grid accent lines (corridor markings)
+  // Horizontal guide at gy=5
+  for (let gx=1; gx<GW-1; gx++) {
+    const {x,y}=ts(gx,5);
+    ctx.beginPath();
+    ctx.moveTo(x, y); ctx.lineTo(x+TW/2, y+TH/2);
+    ctx.strokeStyle='rgba(0,212,255,0.08)'; ctx.lineWidth=1; ctx.stroke();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AGENT CLASS
+// ═══════════════════════════════════════════════════════════════
+
+class Agent {
+  constructor(def) {
+    this.id   = def.id;
+    this.name = def.name;
+    this.role = def.role;
+    this.color= def.color;
+    this.home = def.home;
+
+    const hSt = STATIONS.find(s=>s.id===def.home);
+    this.x = hSt.gx + 0.4;
+    this.y = hSt.gy + 2.0;
+
+    this.state    = 'idle'; // idle|walking|working|returning
+    this.tStation = null;
+    this.tx = this.x; this.ty = this.y;
+    this.workTimer = 0;
+    this.idleTimer = 60 + Math.random()*100;
+    this.task = '';
+    this.taskProgress = 0;
+    this.particles = [];
+    this.tasksDone = 0;
+  }
+
+  update() {
+    this.idleTimer--;
+
+    // Particle lifecycle
+    if (this.state==='working' && G.tick%4===0) {
+      this.particles.push({ox:(Math.random()-0.5)*14, life:0});
+    }
+    this.particles = this.particles
+      .map(p=>({...p, life:p.life+0.025}))
+      .filter(p=>p.life<1);
+
+    if (this.state==='walking') {
+      const dx=this.tx-this.x, dy=this.ty-this.y;
+      const d=Math.hypot(dx,dy);
+      if (d>SPEED) { this.x+=dx/d*SPEED; this.y+=dy/d*SPEED; }
+      else {
+        this.x=this.tx; this.y=this.ty;
+        if (this.tStation==='__home__') {
+          this.state='idle'; this.task=''; this.idleTimer=80+Math.random()*120;
+        } else {
+          this.state='working';
+          this.workTimer = 180+Math.random()*200;
+          this.taskProgress = 0;
+          const st = STATIONS.find(s=>s.id===this.tStation);
+          if (st) {
+            st.stats.tasks++;
+            G.taskCount++;
+            this.task = this._taskLabel(st);
+            addLog(this.name, this.color, `▶ ${st.name}: ${this.task}`);
+          }
+        }
+      }
+    }
+    else if (this.state==='working') {
+      this.workTimer--;
+      this.taskProgress = 1-(this.workTimer/350);
+      if (this.workTimer<=0) {
+        this.tasksDone++;
+        const st = STATIONS.find(s=>s.id===this.tStation);
+        addLog(this.name, this.color, `✓ Task complete at ${st?st.name:'station'}`);
+        this._goHome();
+      }
+    }
+    else if (this.state==='idle' && this.idleTimer<=0) {
+      this._assignTask();
+    }
+  }
+
+  _goHome() {
+    const hSt = STATIONS.find(s=>s.id===this.home);
+    this.tx = hSt.gx + 0.4;
+    this.ty = hSt.gy + 2.0;
+    this.tStation = '__home__';
+    this.state = 'walking';
+  }
+
+  _assignTask() {
+    let targetId;
+    if (Math.random() < 0.72) {
+      targetId = this.home;
+    } else {
+      const ct = CROSS.find(c=>c.from===this.id);
+      if (ct && Math.random()<0.55) {
+        targetId = ct.to;
+        addLog(this.name, this.color, `⇄ ${ct.msg}`);
+      } else {
+        targetId = this.home;
+      }
+    }
+    const st = STATIONS.find(s=>s.id===targetId);
+    if (st) {
+      this.tStation = targetId;
+      this.tx = st.gx + 0.4;
+      this.ty = st.gy + 1.8;
+      this.state = 'walking';
+      addLog(this.name, this.color, `→ Routing to ${st.name}`);
+    }
+  }
+
+  _taskLabel(st) {
+    const tasks = [
+      'Processing batch input','Running inference pipeline',
+      'Validating output schema','Cross-referencing clinical data',
+      'Generating structured report','Applying regulatory filters',
+      'Updating knowledge index','Executing compliance check',
+    ];
+    return tasks[Math.floor(Math.random()*tasks.length)];
+  }
+
+  get badge() {
+    if (this.state==='working')  return {t:'WORKING', c:'b-work'};
+    if (this.state==='walking')  return {t:'ROUTING', c:'b-walk'};
+    return {t:'IDLE', c:'b-idle'};
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════════════════
+
+const G = {
+  agents: [],
+  tick: 0,
+  taskCount: 0,
+  uptime: 0,
+};
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════
+
+function render() {
+  ctx.clearRect(0, 0, CW, CH);
+
+  // BG
+  const bg = ctx.createRadialGradient(CW/2,CH/2,0,CW/2,CH/2,CW*0.75);
+  bg.addColorStop(0, '#060d1c');
+  bg.addColorStop(1, '#020508');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,CW,CH);
+
+  renderRoom();
+
+  // Stations (sorted back→front)
+  [...STATIONS].sort((a,b)=>(a.gx+a.gy)-(b.gx+b.gy))
+    .forEach(s=>drawStation(s, G.tick));
+
+  // Agent paths
+  G.agents.forEach(a=>drawPath(a));
+
+  // Agents (sorted back→front)
+  [...G.agents].sort((a,b)=>(a.x+a.y)-(b.x+b.y))
+    .forEach(a=>drawAgent(a, G.tick));
+
+  // CRT scanlines
+  for (let sy=0; sy<CH; sy+=4) {
+    ctx.fillStyle='rgba(0,0,0,0.055)';
+    ctx.fillRect(0, sy, CW, 1);
+  }
+
+  // Corner vignette
+  const vig = ctx.createRadialGradient(CW/2,CH/2,CW*0.3,CW/2,CH/2,CW*0.85);
+  vig.addColorStop(0,'rgba(0,0,0,0)');
+  vig.addColorStop(1,'rgba(0,0,0,0.45)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,CW,CH);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UI
+// ═══════════════════════════════════════════════════════════════
+
+function updateUI() {
+  // Agent panel
+  const list = document.getElementById('agent-list');
+  list.innerHTML='';
+  for (const ag of G.agents) {
+    const b = ag.badge;
+    const card = document.createElement('div');
+    card.className = `acard ${ag.state==='working'?'on':''}`;
+    const prog = ag.state==='working'
+      ? `<div class="aprog"><div class="aprog-fill" style="width:${Math.min(100,(ag.taskProgress||0)*100).toFixed(0)}%;background:${ag.color}"></div></div>`
+      : '';
+    card.innerHTML = `
+      <div class="acard-top">
+        <div class="adot" style="background:${ag.color};box-shadow:0 0 6px ${ag.color}88"></div>
+        <span class="aname">${ag.name}</span>
+        <span class="abadge ${b.c}">${b.t}</span>
+      </div>
+      <div class="arole">${ag.role}</div>
+      <div class="atask">${ag.task||'Awaiting task assignment...'}</div>
+      ${prog}
+    `;
+    card.onclick = () => {
+      const hSt = STATIONS.find(s=>s.id===ag.home);
+      if (hSt) openModal(hSt, ag);
+    };
+    list.appendChild(card);
+  }
+
+  // Stats
+  const active = G.agents.filter(a=>a.state!=='idle').length;
+  document.getElementById('sc-agents').textContent = `${active} ACTIVE`;
+  document.getElementById('sc-tasks').textContent = G.taskCount;
+
+  const u = G.uptime;
+  const h = String(Math.floor(u/3600)).padStart(2,'0');
+  const m = String(Math.floor(u%3600/60)).padStart(2,'0');
+  const s = String(Math.floor(u%60)).padStart(2,'0');
+  document.getElementById('sc-uptime').textContent = `${h}:${m}:${s}`;
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US',{hour12:false});
+
+  // Update modal task count if open
+  if (curModal) {
+    document.getElementById('ms-tasks').textContent = curModal.stats.tasks;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOG
+// ═══════════════════════════════════════════════════════════════
+
+function addLog(name, color, msg) {
+  const el = document.getElementById('log-list');
+  const t = new Date().toLocaleTimeString('en-US',{hour12:false});
+  const row = document.createElement('div');
+  row.className='lentry';
+  row.innerHTML=`<span class="ltime">${t}</span><span class="lagent" style="color:${color}">${name}</span><span class="lmsg">${msg}</span>`;
+  el.insertBefore(row, el.firstChild);
+  while (el.children.length>80) el.removeChild(el.lastChild);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════════════
+
+let curModal = null;
+let typeInt = null;
+
+function openModal(st, ag) {
+  if (!ag) ag = G.agents.find(a=>a.home===st.id);
+  curModal = st;
+
+  document.getElementById('modal').classList.remove('hidden');
+  document.getElementById('m-icon').textContent  = st.icon;
+  document.getElementById('m-title').textContent = st.name;
+  document.getElementById('m-sub').textContent   = st.taskLabel;
+
+  if (ag) {
+    const dot = document.getElementById('m-adot');
+    dot.style.background   = ag.color;
+    dot.style.boxShadow    = `0 0 6px ${ag.color}`;
+    document.getElementById('m-aname').textContent = `${ag.name} — ${ag.role}`;
+    document.getElementById('m-aname').style.color = ag.color;
+  }
+
+  document.getElementById('ms-tasks').textContent = st.stats.tasks;
+  document.getElementById('ms-acc').textContent   = st.stats.acc;
+  document.getElementById('ms-lat').textContent   = st.stats.lat;
+
+  const btn = document.getElementById('run-btn');
+  btn.disabled = false;
+  btn.textContent = '▶ DISPATCH NEW TASK';
+
+  simulateOutput(st);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+  if (typeInt) { clearTimeout(typeInt); typeInt=null; }
+  curModal=null;
+}
+
+let outputIdx = {};
+
+function simulateOutput(st) {
+  if (typeInt) { clearTimeout(typeInt); typeInt=null; }
+  if (!(st.id in outputIdx)) outputIdx[st.id]=0;
+
+  const out = document.getElementById('m-out');
+  const text = st.outputs[outputIdx[st.id]%st.outputs.length];
+  outputIdx[st.id]++;
+
+  out.textContent = '';
+  let i = 0;
+
+  function typeNext() {
+    if (i < text.length) {
+      out.textContent += text[i++];
+      out.scrollTop = out.scrollHeight;
+      typeInt = setTimeout(typeNext, 14);
+    } else {
+      typeInt = setTimeout(()=>{ if(curModal===st) simulateOutput(st); }, 3200);
+    }
+  }
+  typeNext();
+}
+
+function runTask() {
+  // TODO (Lumen Integration): POST /api/v1/agents/{agent.id}/run
+  //   with { task_type: curModal.id, context: { department: 'cardiology', ... } }
+  //   then stream SSE response into #m-out
+  if (!curModal) return;
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⟳ DISPATCHING...';
+  if (typeInt) { clearTimeout(typeInt); typeInt=null; }
+
+  const ag = G.agents.find(a=>a.home===curModal.id);
+  addLog(ag?ag.name:'SYSTEM', ag?ag.color:'#00d4ff', `Manual dispatch → ${curModal.name}`);
+
+  curModal.stats.tasks++;
+  G.taskCount++;
+  document.getElementById('ms-tasks').textContent = curModal.stats.tasks;
+
+  setTimeout(()=>{
+    btn.disabled = false;
+    btn.textContent = '▶ DISPATCH NEW TASK';
+    simulateOutput(curModal);
+  }, 1200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CLICK DETECTION
+// ═══════════════════════════════════════════════════════════════
+
+canvas.addEventListener('click', e => {
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left;
+  const my = e.clientY - r.top;
+
+  let closest = null, best = Infinity;
+  for (const st of STATIONS) {
+    const s = ts(st.gx, st.gy);
+    const cx = s.x, cy = s.y + TH/2 - 8;
+    const d = Math.hypot(mx-cx, my-cy);
+    if (d < 52 && d < best) { best=d; closest=st; }
+  }
+  if (closest) openModal(closest);
+});
+
+// Tooltip on hover
+canvas.addEventListener('mousemove', e => {
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left;
+  const my = e.clientY - r.top;
+  const tt = document.getElementById('tooltip');
+
+  let found = null;
+  for (const st of STATIONS) {
+    const s = ts(st.gx, st.gy);
+    if (Math.hypot(mx-s.x, my-(s.y+TH/2-8)) < 52) { found=st; break; }
+  }
+  if (found) {
+    tt.textContent = `${found.icon} ${found.name}`;
+    tt.style.display = 'block';
+    tt.style.left = (e.clientX - r.left + 12)+'px';
+    tt.style.top  = (e.clientY - r.top  - 24)+'px';
+    canvas.style.cursor = 'pointer';
+  } else {
+    tt.style.display = 'none';
+    canvas.style.cursor = 'crosshair';
+  }
+});
+
+// Close modal on backdrop click
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target===document.getElementById('modal')) closeModal();
+});
+
+// ═══════════════════════════════════════════════════════════════
+// GAME LOOP
+// ═══════════════════════════════════════════════════════════════
+
+let lastSec=0, uiTick=0;
+
+function loop(ts) {
+  G.tick++;
+
+  for (const ag of G.agents) ag.update();
+
+  render();
+
+  if (++uiTick>=8) { uiTick=0; updateUI(); }
+
+  if (ts-lastSec>1000) { G.uptime++; lastSec=ts; }
+
+  requestAnimationFrame(loop);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+
+function init() {
+  resize();
+  window.addEventListener('resize', resize);
+
+  G.agents = AGENT_DEFS.map(d=>new Agent(d));
+  G.agents.forEach((ag,i) => { ag.idleTimer = 40 + i*50; });
+
+  addLog('SYSTEM','#00d4ff','Lumen Clinical AI Department — v0.1 prototype initialized');
+  addLog('SYSTEM','#00d4ff','6 AI agents online | 6 clinical stations active | Lumen Agent API ready');
+  addLog('SYSTEM','#00ff9f','Click any station or agent card to inspect live task output');
+
+  updateUI();
+  requestAnimationFrame(loop);
+}
+
+// Polyfill roundRect for older browsers
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r) {
+    this.beginPath();
+    this.moveTo(x+r,y);
+    this.lineTo(x+w-r,y);
+    this.quadraticCurveTo(x+w,y,x+w,y+r);
+    this.lineTo(x+w,y+h-r);
+    this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    this.lineTo(x+r,y+h);
+    this.quadraticCurveTo(x,y+h,x,y+h-r);
+    this.lineTo(x,y+r);
+    this.quadraticCurveTo(x,y,x+r,y);
+    this.closePath();
+  };
+}
+
+init();
+</script>
+</body>
+</html>
