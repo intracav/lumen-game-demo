@@ -2,709 +2,1697 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Lumen — Clinical AI Department</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Lumen — Clinical AI Hospital Floor</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
-  --bg:#030810;--panel:#060d1a;--border:#112240;--border2:#1c3a66;
+  --bg:#020810;--panel:#040e1c;--border:#0e1c38;--border2:#1a3460;
   --cyan:#00d4ff;--green:#00ff9f;--amber:#ffaa00;--red:#ff3355;
   --purple:#bb66ff;--pink:#ff4488;--blue:#4499ff;
-  --text:#7aa8c8;--text-hi:#c8e8ff;
+  --text:#6898b8;--hi:#bcd8f0;--lo:#2a4060;
   --mono:'Share Tech Mono',monospace;--ui:'Rajdhani',sans-serif;
-  --topbar-h:52px;--rpanel-w:258px;--bpanel-h:140px;
-  --mobile-tab-h:44px;
 }
 html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:var(--ui);overflow:hidden;touch-action:none;}
-#app{display:flex;flex-direction:column;height:100%;height:100dvh;}
+#app{display:flex;flex-direction:column;height:100dvh;}
 
-/* TOP BAR */
-#topbar{height:var(--topbar-h);background:rgba(6,13,26,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:10;}
-#logo{display:flex;align-items:center;gap:9px;margin-right:4px;}
-.logo-mark{width:30px;height:30px;background:var(--cyan);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:bold;color:var(--bg);flex-shrink:0;}
-.logo-text .name{font-family:var(--mono);font-size:13px;letter-spacing:4px;color:var(--text-hi);line-height:1;}
-.logo-text .sub{font-size:8px;letter-spacing:2px;color:var(--text);margin-top:1px;}
-.chip{display:flex;align-items:center;gap:5px;background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.18);border-radius:4px;padding:3px 8px;font-family:var(--mono);font-size:10px;white-space:nowrap;}
-.chip .lbl{color:var(--text);}.chip .val{color:var(--cyan);}
-.pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);animation:blink 2s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
-#topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
-.clock{font-family:var(--mono);font-size:14px;color:var(--cyan);letter-spacing:2px;}
+/* ─── TOP BAR ─── */
+#topbar{height:48px;background:rgba(4,14,28,.98);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;z-index:30;}
+.lm{width:28px;height:28px;background:var(--cyan);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:bold;color:#020810;flex-shrink:0;}
+.logo-t .ln{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--hi);}
+.logo-t .ls{font-size:8px;letter-spacing:2px;color:var(--text);margin-top:1px;}
+.chip{display:flex;align-items:center;gap:5px;background:rgba(0,212,255,.03);border:1px solid rgba(0,212,255,.14);border-radius:3px;padding:3px 7px;font-family:var(--mono);font-size:9px;color:var(--text);white-space:nowrap;}
+.chip b{color:var(--cyan);}
+.pd{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+#tbr{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.clk{font-family:var(--mono);font-size:13px;color:var(--cyan);letter-spacing:2px;}
+.hint{font-family:var(--mono);font-size:8px;color:rgba(0,212,255,.3);letter-spacing:.8px;}
 
-/* MAIN */
+/* ─── MAIN ─── */
 #main{flex:1;display:flex;overflow:hidden;min-height:0;}
 
-/* CANVAS */
-#canvas-wrap{flex:1;position:relative;overflow:hidden;background:var(--bg);}
+/* ─── CANVAS ─── */
+#cw{flex:1;position:relative;overflow:hidden;background:var(--bg);}
 #gc{display:block;touch-action:none;}
-#tooltip{position:absolute;background:rgba(6,13,26,.95);border:1px solid var(--border2);border-radius:5px;padding:5px 9px;font-family:var(--mono);font-size:10px;color:var(--cyan);pointer-events:none;display:none;z-index:20;letter-spacing:1px;}
+#gc.grab{cursor:grab;}#gc.grabbing{cursor:grabbing;}#gc.pointer{cursor:pointer;}#gc.move-cur{cursor:move;}
 
-/* RIGHT PANEL */
-#rpanel{width:var(--rpanel-w);background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
-.ph{padding:10px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--cyan);display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.ph::before{content:'';width:3px;height:12px;background:var(--cyan);display:block;border-radius:2px;}
-#agent-list{flex:1;overflow-y:auto;padding:7px;}
-#agent-list::-webkit-scrollbar{width:2px;}
-#agent-list::-webkit-scrollbar-thumb{background:var(--border);}
+/* ─── TOOLTIP ─── */
+#tt{position:absolute;background:rgba(4,14,28,.97);border:1px solid var(--border2);border-radius:4px;padding:4px 8px;font-family:var(--mono);font-size:9px;color:var(--cyan);pointer-events:none;display:none;z-index:25;letter-spacing:1px;max-width:200px;}
 
-/* BOTTOM LOG */
-#bpanel{height:var(--bpanel-h);background:var(--panel);border-top:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
-#log-list{flex:1;overflow-y:auto;padding:4px 14px 6px;}
-#log-list::-webkit-scrollbar{width:2px;}
-#log-list::-webkit-scrollbar-thumb{background:var(--border);}
+/* ─── PANELS ─── */
+.panel{background:var(--panel);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+#lpanel{width:210px;border-right:1px solid var(--border);}
+#rpanel{width:228px;border-left:1px solid var(--border);}
+.ph{padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--cyan);display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.ph::before{content:'';width:2px;height:10px;background:var(--cyan);border-radius:2px;display:block;}
+.pscroll{flex:1;overflow-y:auto;padding:6px;}
+.pscroll::-webkit-scrollbar{width:2px;}
+.pscroll::-webkit-scrollbar-thumb{background:var(--border);}
 
-/* SHARED AGENT CARD */
-.acard{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:5px;padding:8px 10px;margin-bottom:5px;cursor:pointer;transition:all .15s;}
-.acard:hover,.acard:active{border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.05);}
-.acard.on{border-color:rgba(0,212,255,.45);background:rgba(0,212,255,.07);}
-.acard-top{display:flex;align-items:center;gap:7px;margin-bottom:3px;}
-.adot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.aname{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text-hi);flex:1;}
-.abadge{font-size:8px;font-family:var(--mono);padding:2px 5px;border-radius:3px;letter-spacing:1px;}
-.b-work{background:rgba(0,255,159,.1);color:var(--green);border:1px solid rgba(0,255,159,.3);}
-.b-walk{background:rgba(255,170,0,.1);color:var(--amber);border:1px solid rgba(255,170,0,.3);}
-.b-idle{background:rgba(120,168,200,.08);color:var(--text);border:1px solid rgba(120,168,200,.18);}
-.arole{font-size:10px;color:var(--text);margin-bottom:3px;letter-spacing:.5px;}
-.atask{font-size:10px;color:var(--cyan);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.8;}
-.aprog{height:2px;background:var(--border);border-radius:1px;margin-top:5px;overflow:hidden;}
-.aprog-fill{height:100%;border-radius:1px;transition:width .3s;}
+/* ─── SELECTION PANEL ─── */
+.sel-empty{font-size:9px;font-family:var(--mono);color:var(--lo);text-align:center;padding:16px 8px;letter-spacing:1px;line-height:1.8;}
+.sel-card{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:6px;}
+.sc-head{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border);}
+.sc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sc-name{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--hi);flex:1;}
+.sc-badge{font-size:7px;font-family:var(--mono);padding:2px 4px;border-radius:2px;letter-spacing:.5px;}
+.bw{background:rgba(0,255,159,.1);color:var(--green);border:1px solid rgba(0,255,159,.25);}
+.br{background:rgba(255,170,0,.1);color:var(--amber);border:1px solid rgba(255,170,0,.25);}
+.bi{background:rgba(100,150,200,.07);color:var(--text);border:1px solid var(--border);}
+.sc-body{padding:8px 10px;}
+.sc-row{display:flex;justify-content:space-between;margin-bottom:3px;}
+.sc-lbl{font-size:8px;color:var(--lo);}
+.sc-val{font-family:var(--mono);font-size:9px;color:var(--hi);}
+.sc-task{font-size:8px;font-family:var(--mono);color:var(--cyan);margin-top:4px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sc-prog{height:2px;background:var(--border);border-radius:1px;margin-top:5px;overflow:hidden;}
+.sc-pf{height:100%;border-radius:1px;transition:width .4s;}
+.act-btns{display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px;border-top:1px solid var(--border);}
+.abtn{flex:1;min-width:56px;font-family:var(--mono);font-size:8px;letter-spacing:.5px;padding:5px 4px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.02);color:var(--text);transition:all .12s;text-align:center;white-space:nowrap;}
+.abtn:hover{border-color:rgba(0,212,255,.35);color:var(--cyan);background:rgba(0,212,255,.07);}
+.abtn.primary{border-color:rgba(0,212,255,.3);color:var(--cyan);}
+.abtn.danger{border-color:rgba(255,51,85,.2);color:var(--red);}
+.abtn.green{border-color:rgba(0,255,159,.25);color:var(--green);}
 
-/* LOG ENTRY */
-.lentry{display:flex;align-items:baseline;gap:8px;padding:2px 0;font-family:var(--mono);font-size:10px;border-bottom:1px solid rgba(17,34,64,.4);}
-.ltime{color:rgba(120,168,200,.4);min-width:50px;}.lagent{min-width:42px;font-weight:bold;}.lmsg{color:var(--text);flex:1;opacity:.9;font-size:9.5px;}
+/* Room info card */
+.rc-icon{font-size:20px;margin-bottom:4px;}
+.rc-name{font-family:var(--mono);font-size:10px;color:var(--hi);font-weight:700;}
+.rc-type{font-size:8px;color:var(--lo);margin-top:1px;letter-spacing:1px;}
+.rc-body{padding:8px 10px;}
+.rc-row{display:flex;justify-content:space-between;margin-bottom:3px;}
+.rc-k{font-size:8px;color:var(--lo);}
+.rc-v{font-family:var(--mono);font-size:9px;color:var(--hi);}
+.rc-agents{font-size:8px;font-family:var(--mono);color:var(--cyan);margin-top:4px;line-height:1.6;}
 
-/* MOBILE BOTTOM SHEET */
-#mobile-btm{display:none;flex-direction:column;background:var(--panel);border-top:1px solid var(--border);flex-shrink:0;overflow:hidden;}
-#drag-handle{width:100%;height:20px;display:flex;align-items:center;justify-content:center;cursor:ns-resize;flex-shrink:0;}
-#drag-handle::before{content:'';width:32px;height:3px;background:var(--border2);border-radius:3px;}
-#mobile-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
-.mtab{flex:1;height:var(--mobile-tab-h);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--text);cursor:pointer;border:none;background:none;transition:all .15s;gap:6px;border-bottom:2px solid transparent;}
-.mtab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
-.mtab-icon{font-size:13px;}
-#mobile-content{flex:1;overflow:hidden;min-height:0;}
-#mobile-agents,#mobile-log{display:none;height:100%;overflow-y:auto;padding:6px 8px;}
-#mobile-agents::-webkit-scrollbar,#mobile-log::-webkit-scrollbar{width:2px;}
-#mobile-agents::-webkit-scrollbar-thumb,#mobile-log::-webkit-scrollbar-thumb{background:var(--border);}
-#mobile-agents.active,#mobile-log.active{display:block;}
+/* ─── AGENT ROSTER ─── */
+.acard{background:rgba(255,255,255,.015);border:1px solid var(--border);border-radius:4px;padding:7px 9px;margin-bottom:4px;cursor:pointer;transition:all .15s;}
+.acard:hover{border-color:rgba(0,212,255,.22);background:rgba(0,212,255,.04);}
+.acard.selected{border-color:rgba(0,212,255,.5);background:rgba(0,212,255,.07);box-shadow:0 0 10px rgba(0,212,255,.07);}
+.acard.working{border-color:rgba(0,255,159,.22);background:rgba(0,255,159,.03);}
+.at{display:flex;align-items:center;gap:6px;margin-bottom:2px;}
+.adot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.aname{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--hi);flex:1;}
+.abg{font-size:7px;font-family:var(--mono);padding:2px 4px;border-radius:2px;letter-spacing:.5px;}
+.arole{font-size:9px;color:var(--lo);margin-bottom:2px;}
+.atask{font-size:8px;color:var(--cyan);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.75;}
+.apb{height:1.5px;background:var(--border);border-radius:1px;margin-top:4px;overflow:hidden;}
+.apbf{height:100%;border-radius:1px;transition:width .3s;}
 
-/* MODAL */
-#modal{position:fixed;inset:0;background:rgba(3,8,16,.88);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(5px);padding:16px;}
-#modal.hidden{display:none;}
-.modal-box{width:100%;max-width:560px;background:#07101f;border:1px solid var(--border2);border-radius:9px;overflow:hidden;box-shadow:0 0 80px rgba(0,212,255,.1);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;}
-.mh{display:flex;align-items:center;gap:11px;padding:13px 16px;border-bottom:1px solid var(--border);background:rgba(0,212,255,.025);flex-shrink:0;}
-.mh-icon{font-size:20px;}.mh-title{flex:1;}
-.mh-title h2{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--text-hi);font-weight:normal;}
-.mh-title p{font-size:10px;color:var(--text);margin-top:2px;}
-.mbtn{background:none;border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:14px;transition:all .15s;flex-shrink:0;}
-.mbtn:hover,.mbtn:active{border-color:var(--red);color:var(--red);}
-.mb{padding:13px 16px;overflow-y:auto;flex:1;}
+/* ─── BOTTOM LOG ─── */
+#bpanel{height:110px;background:var(--panel);border-top:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+#ll{flex:1;overflow-y:auto;padding:3px 12px 4px;}
+#ll::-webkit-scrollbar{width:2px;}
+#ll::-webkit-scrollbar-thumb{background:var(--border);}
+.le{display:flex;align-items:baseline;gap:7px;padding:1.5px 0;font-family:var(--mono);font-size:8.5px;border-bottom:1px solid rgba(14,28,53,.5);}
+.lt{color:rgba(100,150,180,.3);min-width:42px;}
+.lag{min-width:36px;font-weight:bold;}
+.lmsg{color:var(--text);flex:1;font-size:8px;opacity:.85;}
+
+/* ─── CONTEXT MENU ─── */
+#ctx{position:fixed;z-index:600;background:#050f1e;border:1px solid var(--border2);border-radius:5px;min-width:188px;padding:4px 0;box-shadow:0 8px 40px rgba(0,0,0,.8);display:none;}
+.ctx-hd{padding:6px 12px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--cyan);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+.ctx-dot{width:6px;height:6px;border-radius:50%;}
+.ctx-item{padding:7px 12px;font-family:var(--mono);font-size:9px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .1s;letter-spacing:.3px;}
+.ctx-item:hover{background:rgba(0,212,255,.08);color:var(--hi);}
+.ctx-item.red:hover{background:rgba(255,51,85,.07);color:var(--red);}
+.ctx-item.grn:hover{background:rgba(0,255,159,.07);color:var(--green);}
+.ctx-sep{height:1px;background:var(--border);margin:3px 0;}
+.ctx-ico{width:14px;text-align:center;font-size:11px;}
+.ctx-sub{color:var(--lo);font-size:8px;margin-left:auto;}
+
+/* ─── STATION MODAL ─── */
+#modal{position:fixed;inset:0;background:rgba(2,8,16,.9);display:flex;align-items:center;justify-content:center;z-index:500;padding:16px;backdrop-filter:blur(6px);}
+#modal.h{display:none;}
+.mbox{width:100%;max-width:520px;background:#050f1e;border:1px solid var(--border2);border-radius:7px;overflow:hidden;max-height:calc(100dvh - 32px);display:flex;flex-direction:column;box-shadow:0 0 60px rgba(0,212,255,.07);}
+.mhd{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);background:rgba(0,212,255,.02);flex-shrink:0;}
+.mico{font-size:18px;}
+.mtt{flex:1;}
+.mtt h2{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--hi);font-weight:normal;}
+.mtt p{font-size:9px;color:var(--text);margin-top:1px;}
+.mcls{background:none;border:1px solid var(--border);color:var(--text);width:24px;height:24px;border-radius:3px;cursor:pointer;font-size:12px;transition:all .12s;flex-shrink:0;}
+.mcls:hover{border-color:var(--red);color:var(--red);}
+.mb{padding:12px 14px;overflow-y:auto;flex:1;}
 .mb::-webkit-scrollbar{width:2px;}
 .mb::-webkit-scrollbar-thumb{background:var(--border);}
-.magent{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:4px;margin-bottom:10px;}
-.madot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.maname{font-family:var(--mono);font-size:11px;color:var(--text-hi);flex:1;}
-.live-tag{font-family:var(--mono);font-size:8px;color:var(--green);border:1px solid rgba(0,255,159,.35);padding:2px 5px;border-radius:3px;animation:blink 1.4s infinite;letter-spacing:1px;flex-shrink:0;}
-.ai-out{background:#020710;border:1px solid rgba(0,212,255,.12);border-radius:4px;padding:11px;font-family:var(--mono);font-size:10px;color:var(--green);min-height:110px;max-height:150px;overflow-y:auto;line-height:1.6;white-space:pre-wrap;}
-.ai-out::-webkit-scrollbar{width:2px;}
-.ai-out::-webkit-scrollbar-thumb{background:var(--border);}
-.mstats{display:flex;gap:7px;margin-top:10px;}
-.ms{flex:1;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:4px;padding:7px;text-align:center;}
-.ms .v{font-family:var(--mono);font-size:16px;color:var(--cyan);display:block;}
-.ms .l{font-size:8px;color:var(--text);letter-spacing:1px;margin-top:1px;}
-.run-btn{margin-top:10px;width:100%;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.3);color:var(--cyan);font-family:var(--mono);font-size:11px;letter-spacing:2px;padding:10px;border-radius:4px;cursor:pointer;transition:all .2s;}
-.run-btn:hover,.run-btn:active{background:rgba(0,212,255,.15);border-color:var(--cyan);}
-.run-btn:disabled{opacity:.4;cursor:default;}
+.mag{display:flex;align-items:center;gap:7px;padding:7px 9px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:3px;margin-bottom:9px;}
+.mag-d{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.mag-n{font-family:var(--mono);font-size:10px;flex:1;color:var(--hi);}
+.ltag{font-family:var(--mono);font-size:7px;color:var(--green);border:1px solid rgba(0,255,159,.3);padding:2px 4px;border-radius:2px;animation:blink 1.4s infinite;letter-spacing:1px;}
+.aout{background:#020710;border:1px solid rgba(0,212,255,.1);border-radius:3px;padding:10px;font-family:var(--mono);font-size:9px;color:var(--green);min-height:95px;max-height:130px;overflow-y:auto;line-height:1.65;white-space:pre-wrap;}
+.aout::-webkit-scrollbar{width:2px;}
+.mstats{display:flex;gap:6px;margin-top:8px;}
+.mst{flex:1;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:3px;padding:6px;text-align:center;}
+.mst .sv{font-family:var(--mono);font-size:14px;color:var(--cyan);display:block;}
+.mst .sl{font-size:7px;color:var(--lo);letter-spacing:1px;margin-top:1px;}
+.rbtn{margin-top:8px;width:100%;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.25);color:var(--cyan);font-family:var(--mono);font-size:9px;letter-spacing:2px;padding:9px;border-radius:3px;cursor:pointer;transition:all .15s;}
+.rbtn:hover{background:rgba(0,212,255,.12);border-color:var(--cyan);}
+.rbtn:disabled{opacity:.35;cursor:default;}
 
-/* RESPONSIVE */
+/* Interaction flash effect */
+.flash{animation:flash .4s ease-out;}
+@keyframes flash{0%{opacity:1}50%{opacity:.5}100%{opacity:1}}
+
+/* ─── MOBILE BOTTOM SHEET ─── */
+#mbtm{display:none;flex-direction:column;background:var(--panel);border-top:1px solid var(--border);flex-shrink:0;overflow:hidden;height:200px;}
+#dh{width:100%;height:18px;display:flex;align-items:center;justify-content:center;cursor:ns-resize;flex-shrink:0;}
+#dh::before{content:'';width:28px;height:2.5px;background:var(--border2);border-radius:2px;}
+#mtabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.mt{flex:1;height:38px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;color:var(--text);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;gap:5px;letter-spacing:1px;}
+.mt.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+#mc{flex:1;overflow:hidden;min-height:0;}
+#ma,#mlog{display:none;height:100%;overflow-y:auto;padding:5px 8px;}
+#ma.active,#mlog.active{display:block;}
+
 @media(max-width:767px){
-  :root{--topbar-h:46px;}
-  #rpanel,#bpanel{display:none;}
-  #mobile-btm{display:flex;height:220px;}
-  .chip.d-only{display:none;}
-  .logo-text .sub{display:none;}
+  #lpanel,#rpanel,#bpanel{display:none;}
+  #mbtm{display:flex;}
+  .d-only{display:none!important;}
 }
-@media(max-width:380px){
-  :root{--topbar-h:42px;}
-  .logo-mark{width:26px;height:26px;font-size:12px;}
-  .logo-text .name{font-size:11px;letter-spacing:2px;}
-  .clock{font-size:11px;}
-}
-@media(orientation:landscape)and(max-height:480px){
-  #mobile-btm{height:130px!important;}
-  .ai-out{min-height:70px;max-height:80px;}
-}
+@media(max-width:380px){#topbar{height:42px;}}
+@media(orientation:landscape)and(max-height:480px){#mbtm{height:120px!important;}.aout{min-height:60px;max-height:80px;}}
 </style>
 </head>
 <body>
 <div id="app">
 
-  <div id="topbar">
-    <div id="logo">
-      <div class="logo-mark">L</div>
-      <div class="logo-text"><div class="name">LUMEN</div><div class="sub">CLINICAL AI PLATFORM</div></div>
-    </div>
-    <div class="chip d-only"><span class="lbl">DEPT</span><span class="val">CARDIOLOGY · ICU</span></div>
-    <div class="chip"><div class="pulse-dot"></div><span class="val" id="sc-agents">6 ACTIVE</span></div>
-    <div class="chip d-only"><span class="lbl">TASKS</span><span class="val" id="sc-tasks">0</span></div>
-    <div class="chip d-only"><span class="lbl">UPTIME</span><span class="val" id="sc-uptime">00:00:00</span></div>
-    <div id="topbar-right">
-      <div class="chip d-only"><span class="lbl">ENV</span><span class="val">v0.1</span></div>
-      <div class="clock" id="clock">00:00:00</div>
-    </div>
+<!-- TOP BAR -->
+<div id="topbar">
+  <div style="display:flex;align-items:center;gap:8px;margin-right:6px">
+    <div class="lm">L</div>
+    <div class="logo-t"><div class="ln">LUMEN</div><div class="ls d-only">CLINICAL AI HOSPITAL</div></div>
   </div>
-
-  <div id="main">
-    <div id="canvas-wrap">
-      <canvas id="gc"></canvas>
-      <div id="tooltip"></div>
-    </div>
-    <div id="rpanel">
-      <div class="ph">AGENT ROSTER</div>
-      <div id="agent-list"></div>
-    </div>
+  <div class="chip d-only">FLOOR <b>CARDIOLOGY · ICU</b></div>
+  <div class="chip"><div class="pd"></div><b id="sc-a">6</b></div>
+  <div class="chip d-only">TASKS <b id="sc-t">0</b></div>
+  <div class="chip d-only">ALERTS <b id="sc-al" style="color:var(--red)">0</b></div>
+  <div id="tbr">
+    <span class="hint d-only">DRAG AGENT · RIGHT-CLICK FOR ACTIONS · CLICK ROOM TO INSPECT</span>
+    <div class="clk" id="clk">--:--:--</div>
   </div>
-
-  <div id="bpanel">
-    <div class="ph">ACTIVITY LOG</div>
-    <div id="log-list"></div>
-  </div>
-
-  <!-- MOBILE BOTTOM SHEET -->
-  <div id="mobile-btm">
-    <div id="drag-handle"></div>
-    <div id="mobile-tabs">
-      <button class="mtab active" data-tab="agents" onclick="switchTab('agents')"><span class="mtab-icon">🤖</span>AGENTS</button>
-      <button class="mtab" data-tab="log" onclick="switchTab('log')"><span class="mtab-icon">📡</span>LOG</button>
-    </div>
-    <div id="mobile-content">
-      <div id="mobile-agents" class="active"></div>
-      <div id="mobile-log"></div>
-    </div>
-  </div>
-
 </div>
 
-<!-- MODAL -->
-<div id="modal" class="hidden">
-  <div class="modal-box">
-    <div class="mh">
-      <span class="mh-icon" id="m-icon">💻</span>
-      <div class="mh-title"><h2 id="m-title">STATION</h2><p id="m-sub">Task type</p></div>
-      <button class="mbtn" onclick="closeModal()">✕</button>
+<div id="main">
+  <!-- LEFT: Selection -->
+  <div id="lpanel" class="panel">
+    <div class="ph">SELECTION</div>
+    <div class="pscroll" id="sel-panel">
+      <div class="sel-empty">Click any<br>agent or room<br>to inspect</div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="cw">
+    <canvas id="gc"></canvas>
+    <div id="tt"></div>
+  </div>
+
+  <!-- RIGHT: Agent roster -->
+  <div id="rpanel" class="panel">
+    <div class="ph">AGENT ROSTER</div>
+    <div class="pscroll" id="al"></div>
+  </div>
+</div>
+
+<!-- BOTTOM LOG -->
+<div id="bpanel" class="panel" style="height:110px;border-top:1px solid var(--border);">
+  <div class="ph">ACTIVITY LOG</div>
+  <div id="ll"></div>
+</div>
+
+<!-- MOBILE BOTTOM SHEET -->
+<div id="mbtm">
+  <div id="dh"></div>
+  <div id="mtabs">
+    <button class="mt active" data-t="a" onclick="switchTab('a')">🤖 AGENTS</button>
+    <button class="mt" data-t="log" onclick="switchTab('log')">📡 LOG</button>
+    <button class="mt" data-t="sel" onclick="switchTab('sel')">🔍 INSPECT</button>
+  </div>
+  <div id="mc">
+    <div id="ma" class="active"></div>
+    <div id="mlog"></div>
+    <div id="msel" style="display:none;height:100%;overflow-y:auto;padding:6px;"></div>
+  </div>
+</div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx"></div>
+
+<!-- STATION / ROOM MODAL -->
+<div id="modal" class="h">
+  <div class="mbox">
+    <div class="mhd">
+      <span class="mico" id="m-ico">🏥</span>
+      <div class="mtt"><h2 id="m-title">ROOM</h2><p id="m-sub">Detail</p></div>
+      <button class="mcls" onclick="closeModal()">✕</button>
     </div>
     <div class="mb">
-      <div class="magent">
-        <div class="madot" id="m-adot"></div>
-        <span class="maname" id="m-aname">Agent</span>
-        <span class="live-tag">● LIVE</span>
+      <div class="mag" id="m-agent-row">
+        <div class="mag-d" id="m-dot"></div>
+        <span class="mag-n" id="m-aname">—</span>
+        <span class="ltag">● LIVE</span>
       </div>
-      <div class="ai-out" id="m-out"></div>
+      <div class="aout" id="m-out">—</div>
       <div class="mstats">
-        <div class="ms"><span class="v" id="ms-tasks">0</span><div class="l">TASKS</div></div>
-        <div class="ms"><span class="v" id="ms-acc">—</span><div class="l">ACCURACY</div></div>
-        <div class="ms"><span class="v" id="ms-lat">—</span><div class="l">LATENCY</div></div>
+        <div class="mst"><span class="sv" id="ms-t">0</span><div class="sl">TASKS</div></div>
+        <div class="mst"><span class="sv" id="ms-a">—</span><div class="sl">ACCURACY</div></div>
+        <div class="mst"><span class="sv" id="ms-l">—</span><div class="sl">LATENCY</div></div>
       </div>
-      <!-- TODO Lumen: POST /api/v1/agents/{id}/run · stream SSE response into #m-out -->
-      <button class="run-btn" id="run-btn" onclick="runTask()">▶ DISPATCH NEW TASK</button>
+      <button class="rbtn" id="run-btn" onclick="runTask()">▶ DISPATCH TASK</button>
     </div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════
-// TILE SIZE — responsive
-// ══════════════════════════════════════════════════════
-const GW=16,GH=12,SPEED=0.038;
-let TW,TH;
+'use strict';
+// ══════════════════════════════════════════════════════════════
+//  GRID & TILE CONFIG
+// ══════════════════════════════════════════════════════════════
+const GW=22, GH=16;
+let TW=64, TH=32;
+const SPD=0.045;
 
-function getTileSize(){
-  const w=window.innerWidth,h=window.innerHeight;
-  const isLandSmall=w<768&&h<480;
-  const isMobile=w<768;
-  if(isLandSmall)return{TW:40,TH:20};
-  if(isMobile)   return{TW:46,TH:23};
-  return               {TW:68,TH:34};
+function calcTileSize(){
+  const m=window.innerWidth<768, l=m&&window.innerHeight<500;
+  if(l)return{TW:36,TH:18}; if(m)return{TW:46,TH:23}; return{TW:64,TH:32};
 }
 
-// ══════════════════════════════════════════════════════
-// DATA
-// ══════════════════════════════════════════════════════
-const STATIONS=[
-  {id:'ehr',name:'EHR TERMINAL',icon:'🖥️',gx:2,gy:2,c:'#00d4ff',cd:'#006888',cdd:'#003c4f',taskLabel:'Electronic Health Records',
-   outputs:['EHR BATCH PROCESSING — 12 records\n→ Patient #4782: Cardiology admission\n  · ICD-10 mapped: I21.9 (STEMI)\n  · SNOMED: 57054005\n  · Drug interaction: Warfarin ↔ Aspirin [FLAG]\n  · Care gap: follow-up not scheduled\n→ Patient #4783–4793: Processed\n✓ Batch complete. 3 clinical alerts issued.','ORDER VERIFICATION — Dr. Patel queue\n→ Metoprolol 25mg BID (weight-based ✓)\n→ Furosemide 40mg IV × 3 doses\n  · Prerequisite: K+ 3.8 mEq/L (range OK)\n→ Heparin drip: STEMI protocol\n→ Allergy check: NKDA ✓\n✓ All orders verified. Pharmacy notified.','INSURANCE PRE-AUTH CHECK\n→ Procedure: Left heart cath + PCI (CPT 92941)\n→ Payer: BlueCross Anthem PPO\n→ Clinical criteria:\n  · STEMI: MET ✓  · EF <40%: MET ✓\n  · Emergent waiver applied ✓\n→ Prior auth #: PA-2024-88821\n✓ Authorization APPROVED. OR scheduled.'],
-   stats:{tasks:0,acc:'99.1%',lat:'1.2s'}},
-  {id:'nlp',name:'NLP ENGINE',icon:'🧠',gx:7,gy:2,c:'#00ff9f',cd:'#006644',cdd:'#003322',taskLabel:'Natural Language Processing',
-   outputs:['NLP PIPELINE — Batch: 47 clinical notes\n→ Tokenization: 21,340 tokens\n→ NER Results:\n  · Medications:  89 entities\n  · Diagnoses:   124 entities\n  · Procedures:   99 entities\n→ Negation detected: 23 findings excluded\n✓ Structured output → EHR integration.','RADIOLOGY REPORT NLP — #RD-9932\n→ Impression section parsed\n→ Key findings extracted:\n  · "bilateral pleural effusions" → FINDING\n  · "cardiomegaly" → FINDING (moderate)\n  · "no pneumothorax" → NEGATED ✓\n→ Auto-route: Dr. Kim (Cardiology)\n✓ Priority flag set. EHR updated.','PATIENT FEEDBACK ANALYSIS — 203 responses\n→ Sentiment scoring (VADER + custom):\n  · Positive: 153 (75.4%)\n  · Neutral:   38 (18.7%)\n  · Negative:  12 (5.9%)\n→ Flagged themes: pain mgmt, wait time\n✓ QI report → Patient Experience.'],
-   stats:{tasks:0,acc:'97.8%',lat:'0.8s'}},
-  {id:'deid',name:'DE-ID STATION',icon:'🔐',gx:12,gy:2,c:'#ffaa00',cd:'#886600',cdd:'#554400',taskLabel:'HIPAA De-Identification (Safe Harbor)',
-   outputs:['DE-ID PASS — Dataset: ClinicalNotes_Q4\n→ Records: 1,847 | PHI scan initiated\n→ Entities targeted:\n  NAME · DOB · MRN · ADDRESS · SSN\n→ Method: Safe Harbor 45 CFR §164.514(b)\n→ PHI tokens redacted: 8,341\n✓ Dataset cleared. IRB export ready.','DICOM METADATA STRIP — 340 files\n→ PHI in headers detected:\n  PatientName · StudyDate · PhysicianName\n→ Pixel burn-in audit: 2 files flagged\n→ 338 auto-cleared · 2 → manual review\n✓ Compliance batch delivered.','RE-ID RISK ASSESSMENT\n→ k-anonymity: k = 12  [PASS ≥ 5] ✓\n→ ℓ-diversity: attribute diversity ✓\n→ t-closeness: 0.18 [within threshold] ✓\n→ Expert determination: SATISFIED\n✓ Dataset approved for research release.'],
-   stats:{tasks:0,acc:'100%',lat:'2.1s'}},
-  {id:'imaging',name:'IMAGING AI',icon:'🩻',gx:2,gy:8,c:'#bb66ff',cd:'#662299',cdd:'#441166',taskLabel:'DICOM / Radiology Analysis',
-   outputs:['DICOM ANALYSIS — CT Chest w/contrast\n→ Model: LumenVision-Thoracic v2.3\n→ Segmentation: lungs · vessels · lymph nodes\n→ Findings:\n  · LLL consolidation 12mm [SUSPICIOUS]\n  · No pneumothorax ✓\n  · Mild pericardial thickening\n→ Confidence: 94.7%\n✓ STAT flag set. Radiologist queued.','ECHO REPORT — 4-chamber, 240 frames\n→ LVEF calculated: 42% [REDUCED]\n→ Wall motion: anteroseptal hypokinesis\n→ Valves: mild MR, no AS detected\n→ Delta vs prior: 58% → 42%\n✓ Change alert → Cardiology attending.','CHEST X-RAY BATCH — 28 images\n→ Normal: 19 · Abnormal: 9\n→ Findings: 4 pneumonia, 3 effusions,\n  2 cardiomegaly\n→ URGENT: Rm 412 — possible tension PTX\n✓ Rapid response paged.'],
-   stats:{tasks:0,acc:'96.3%',lat:'3.4s'}},
-  {id:'notes',name:'CLINICAL NOTES',icon:'📋',gx:7,gy:8,c:'#ff4488',cd:'#aa1155',cdd:'#770033',taskLabel:'Ambient Scribe & Coding',
-   outputs:['AMBIENT SCRIBE — Dr. Patel / Pt #3391\n→ Audio: 18 min 42 sec processed\n→ SOAP note generated:\n  S: 62yo M, worsening dyspnea × 3 days\n  O: BP 142/88 · HR 98 · SpO2 94% RA\n     Bilateral crackles · 2+ LE edema\n  A: Decompensated CHF, NYHA Class III\n  P: IV Lasix 40mg · echo · BNP ordered\n✓ Awaiting physician attestation.','ICD-10 CODING — Inpatient batch × 8\n→ Diagnoses coded: 34 codes applied\n→ CC/MCC capture rate: 87% [above avg]\n→ Potential missed CC identified:\n  Protein-calorie malnutrition (E46)\n→ DRG impact: +$4,200 expected\n✓ Coding complete. CDI notified.','PRIOR AUTH — Left heart catheterization\n→ Clinical criteria compiled: 12 items\n→ Payer criteria check: 6/7 MET\n→ Emergent indication waiver applied\n→ PA #: PA-20241103-4892\n✓ Submitted. Est. approval: 24hr.'],
-   stats:{tasks:0,acc:'98.5%',lat:'1.7s'}},
-  {id:'vitals',name:'VITALS MONITOR',icon:'💓',gx:12,gy:8,c:'#4499ff',cd:'#224488',cdd:'#112255',taskLabel:'Smart Vitals & Alert Engine',
-   outputs:['REAL-TIME SWEEP — ICU Floor B (12 pts)\n→ Normal range: 9 patients ✓\n→ ⚠ ALERTS ACTIVE:\n  · Rm 411: HR 128 sustained (>30 min)\n  · Rm 415: SpO2 88% — O2 adjusted\n  · Rm 407: BP 195/110 — HTN urgency\n✓ Rapid response + charge RN notified.','SEPSIS SURVEILLANCE — 6hr interval\n→ Patients screened: 47 (Sepsis-3)\n→ SOFA ≥2 rise: 3 patients flagged\n→ Hour-1 bundle initiated: Pt #2847\n  · Blood cultures × 2 ✓\n  · Broad-spectrum abx ordered ✓\n✓ Alerts documented. ICU notified.','PREDICTIVE DETERIORATION — Pt #5501\n→ 4-hour risk score: HIGH (78th %ile)\n→ Contributing signals:\n  · RR: 14 → 22 over 6 hours ▲\n  · UO: <0.3 mL/kg/hr ▼\n  · Lactate trend: 1.1 → 1.8 ▲\n→ Early Warning Score: 7 [threshold ≥5]\n✓ Proactive escalation. Attending briefed.'],
-   stats:{tasks:0,acc:'99.9%',lat:'0.1s'}},
+// ══════════════════════════════════════════════════════════════
+//  ROOM LAYOUT
+// ══════════════════════════════════════════════════════════════
+const ROOMS=[
+  // --- Agent Private Offices (top row) ---
+  {id:'aria_office', name:"ARIA's Office",     type:'office',    icon:'🖥️',  x1:1,y1:1,x2:3,y2:3,  agentId:'aria',color:'#00d4ff'},
+  {id:'nova_lab',    name:"NOVA Lab",           type:'office',    icon:'🧠',  x1:4,y1:1,x2:6,y2:3,  agentId:'nova',color:'#00ff9f'},
+  {id:'deid_vault',  name:"De-ID Vault",        type:'office',    icon:'🔐',  x1:7,y1:1,x2:9,y2:3,  agentId:'deid',color:'#ffaa00'},
+  {id:'iris_suite',  name:"Imaging Suite",      type:'office',    icon:'🩻',  x1:10,y1:1,x2:12,y2:3,agentId:'iris',color:'#bb66ff'},
+  {id:'notes_room',  name:"Scribe Room",        type:'office',    icon:'📋',  x1:13,y1:1,x2:15,y2:3,agentId:'clio',color:'#ff4488'},
+  {id:'vitals_hub',  name:"Vitals Hub",         type:'office',    icon:'💓',  x1:16,y1:1,x2:18,y2:3,agentId:'vega',color:'#4499ff'},
+  // --- Middle wing ---
+  {id:'conference',  name:"Conference Room",    type:'conference',icon:'📊',  x1:0,y1:5,x2:5,y2:10, color:'#2a3d66'},
+  {id:'nurses_stn',  name:"Nurses Station",     type:'nurses',    icon:'🏥',  x1:17,y1:5,x2:21,y2:10,color:'#0099cc'},
+  {id:'pt101',       name:"Patient Rm 101",     type:'patient',   icon:'🛏️',  x1:6,y1:5,x2:9,y2:7,  patient:'PT-4782',color:'#2a4a6a'},
+  {id:'pt102',       name:"Patient Rm 102",     type:'patient',   icon:'🛏️',  x1:10,y1:5,x2:13,y2:7,patient:'PT-4783',color:'#2a4a6a'},
+  {id:'pt103',       name:"Patient Rm 103",     type:'patient',   icon:'🛏️',  x1:14,y1:5,x2:16,y2:7,patient:'PT-4784',color:'#2a4a6a'},
+  {id:'pt104',       name:"Patient Rm 104",     type:'patient',   icon:'🛏️',  x1:6,y1:8,x2:9,y2:10, patient:'PT-4785',color:'#2a4a6a'},
+  {id:'pt105',       name:"Patient Rm 105",     type:'patient',   icon:'🛏️',  x1:10,y1:8,x2:13,y2:10,patient:'PT-4786',color:'#2a4a6a'},
+  {id:'break_room',  name:"Break Room",         type:'break',     icon:'☕',  x1:14,y1:8,x2:16,y2:10,color:'#336633'},
+  // --- Lower wing ---
+  {id:'pt201',       name:"Patient Rm 201",     type:'patient',   icon:'🛏️',  x1:0,y1:12,x2:4,y2:14, patient:'PT-4787',color:'#2a4a6a'},
+  {id:'pt202',       name:"Patient Rm 202",     type:'patient',   icon:'🛏️',  x1:5,y1:12,x2:9,y2:14, patient:'PT-4788',color:'#2a4a6a'},
+  {id:'pt203',       name:"Patient Rm 203",     type:'patient',   icon:'🛏️',  x1:10,y1:12,x2:14,y2:14,patient:'PT-4789',color:'#2a4a6a'},
+  {id:'pt204',       name:"Patient Rm 204",     type:'patient',   icon:'🛏️',  x1:15,y1:12,x2:19,y2:14,patient:'PT-4790',color:'#2a4a6a'},
+  {id:'supply',      name:"Supply Room",        type:'supply',    icon:'📦',  x1:20,y1:12,x2:21,y2:14,color:'#553300'},
 ];
 
+// Tile→room index
+const RMAP=Array.from({length:GW},()=>Array(GH).fill(null));
+ROOMS.forEach(r=>{
+  for(let x=r.x1;x<=Math.min(GW-1,r.x2);x++)
+    for(let y=r.y1;y<=Math.min(GH-1,r.y2);y++)
+      RMAP[x][y]=r.id;
+});
+const getRoomAt=(x,y)=>(x<0||y<0||x>=GW||y>=GH)?null:(RMAP[x]&&RMAP[x][y]?ROOMS.find(r=>r.id===RMAP[x][y]):null);
+const getRoomById=(id)=>ROOMS.find(r=>r.id===id)||null;
+
+// ── Wall edge map (where walls should be drawn)
+// walls[x][y] = {r:bool, b:bool}  (right wall, bottom wall from tile x,y)
+const WALLS=Array.from({length:GW},()=>Array.from({length:GH},()=>({r:false,b:false})));
+ROOMS.forEach(r=>{
+  // Right wall = along x2 edge
+  for(let y=r.y1;y<=r.y2;y++){
+    if(r.x2+1<GW) WALLS[r.x2][y].r=true;
+    if(r.x1>0)    WALLS[r.x1-1][y].r=true;
+  }
+  // Bottom wall = along y2 edge
+  for(let x=r.x1;x<=r.x2;x++){
+    if(r.y2+1<GH) WALLS[x][r.y2].b=true;
+    if(r.y1>0)    WALLS[x][r.y1-1].b=true;
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  STATION DATA
+// ══════════════════════════════════════════════════════════════
+const SD={
+  aria_office:{sub:'Electronic Health Records',stats:{tasks:0,acc:'99.1%',lat:'1.2s'},
+    outs:['EHR BATCH PROCESSING — 12 records\n→ Patient #4782: Cardiology admission\n  · ICD-10: I21.9 (STEMI)\n  · SNOMED: 57054005\n  · Drug interaction: Warfarin ↔ Aspirin [FLAG]\n→ Patient #4783–4793: Processed\n✓ Batch complete. 3 clinical alerts issued.',
+          'ORDER VERIFICATION — Dr. Patel queue\n→ Metoprolol 25mg BID (weight-based ✓)\n→ Furosemide 40mg IV × 3 doses · K+OK\n→ Heparin drip: STEMI protocol\n→ Allergy check: NKDA ✓\n✓ All orders verified. Pharmacy notified.']},
+  nova_lab:{sub:'Natural Language Processing',stats:{tasks:0,acc:'97.8%',lat:'0.8s'},
+    outs:['NLP PIPELINE — Batch: 47 clinical notes\n→ Tokenization: 21,340 tokens\n→ NER:\n  · Medications: 89 · Diagnoses: 124\n  · Procedures: 99 entities\n→ Negation detected: 23 findings excluded\n✓ Structured output → EHR integration.',
+          'RADIOLOGY NLP — #RD-9932\n→ "bilateral pleural effusions" → FINDING\n→ "cardiomegaly" → FINDING (moderate)\n→ "no pneumothorax" → NEGATED ✓\n→ Auto-route: Dr. Kim (Cardiology)\n✓ Priority flag set. EHR updated.']},
+  deid_vault:{sub:'HIPAA De-Identification',stats:{tasks:0,acc:'100%',lat:'2.1s'},
+    outs:['DE-ID PASS — Dataset: ClinicalNotes_Q4\n→ Records: 1,847 | PHI scan initiated\n→ NAME · DOB · MRN · ADDRESS · SSN\n→ Method: Safe Harbor 45 CFR §164.514(b)\n→ PHI tokens redacted: 8,341\n✓ Dataset cleared. IRB export ready.',
+          'DICOM METADATA STRIP — 340 files\n→ PatientName · StudyDate detected\n→ Pixel burn-in audit: 2 files flagged\n→ 338 auto-cleared · 2 → manual review\n✓ Compliance batch delivered.']},
+  iris_suite:{sub:'DICOM / Radiology Analysis',stats:{tasks:0,acc:'96.3%',lat:'3.4s'},
+    outs:['DICOM ANALYSIS — CT Chest w/contrast\n→ Model: LumenVision-Thoracic v2.3\n→ LLL consolidation 12mm [SUSPICIOUS]\n→ No pneumothorax ✓\n→ Pericardial thickening: mild\n→ Confidence: 94.7%\n✓ STAT flag set. Radiologist queued.',
+          'ECHO — 4-chamber, 240 frames\n→ LVEF: 42% [REDUCED]\n→ Wall motion: anteroseptal hypokinesis\n→ Valves: mild MR, no AS detected\n→ Delta vs prior: 58% → 42%\n✓ Change alert → Cardiology attending.']},
+  notes_room:{sub:'Ambient Scribe & Coding',stats:{tasks:0,acc:'98.5%',lat:'1.7s'},
+    outs:['AMBIENT SCRIBE — Dr. Patel / Pt #3391\n→ Audio: 18m 42s processed\n  S: 62yo M, dyspnea × 3 days\n  O: BP 142/88 · HR 98 · SpO2 94%\n  A: Decompensated CHF, NYHA III\n  P: IV Lasix 40mg · echo ordered\n✓ Awaiting physician attestation.',
+          'ICD-10 CODING — Inpatient × 8\n→ 34 codes applied\n→ CC/MCC capture: 87% [above avg]\n→ Missed CC: Malnutrition (E46)\n→ DRG impact: +$4,200\n✓ CDI team notified.']},
+  vitals_hub:{sub:'Smart Vitals & Alert Engine',stats:{tasks:0,acc:'99.9%',lat:'0.1s'},
+    outs:['REAL-TIME SWEEP — ICU Floor B (12 pts)\n→ Normal: 9 patients ✓\n→ ⚠ ALERTS:\n  · Rm 101: HR 128 sustained >30 min\n  · Rm 102: SpO2 88% — O2 adjusted\n  · Rm 104: BP 195/110 HTN urgency\n✓ Rapid response notified.',
+          'SEPSIS SURVEILLANCE — 6hr scan\n→ Patients screened: 47 (Sepsis-3)\n→ SOFA ≥2 rise: 3 patients flagged\n→ Hour-1 bundle: Pt #2847\n  · Cultures × 2 ✓ · Abx ordered ✓\n✓ Alerts documented. ICU notified.']},
+  conference:{sub:'Clinical Rounds & Conferencing',stats:{tasks:0,acc:'—',lat:'—'},
+    outs:['MORNING ROUNDS — 08:00\n→ Census: 12 ICU patients reviewed\n→ Critical flags: 3 (Rm 101,102,104)\n→ Discharge planning: PT-4782, PT-4783\n→ New admits: 2 overnight\n✓ Rounds complete. Tasks assigned.',
+          'CASE CONFERENCE — Tumor Board\n→ Presenting: IRIS (radiology lead)\n→ Case: Pt #4782 — LLL lesion 12mm\n→ Plan: CT-guided biopsy recommended\n→ Multidisciplinary plan: DRAFTED\n✓ Report to attending. F/U: 7 days.']},
+  nurses_stn:{sub:'Nursing Command Center',stats:{tasks:0,acc:'—',lat:'—'},
+    outs:['SHIFT HANDOFF — 07:00 → 19:00\n→ 12 active patients reviewed\n→ PRN meds: 4 orders pending\n→ Vitals alerts: Rm 101, 102, 104\n→ Fall risk: 2 patients (yellow band)\n→ Isolation: 1 contact precautions\n✓ Day shift briefed.',
+          'TASK ASSIGNMENT — VEGA dispatch\n→ Vitals round: all rooms\n→ Med admin: 3 tasks\n→ Specimen collection: ARIA\n→ Discharge paperwork: CLIO\n✓ All tasks distributed.']},
+  break_room:{sub:'Agent Maintenance Cycle',stats:{tasks:0,acc:'—',lat:'—'},
+    outs:['MAINTENANCE CYCLE\n→ Processing queues flushed\n→ Memory compression: 18% freed\n→ Model weights: no updates pending\n→ API rate limits: nominal\n→ Scheduled downtime: 8 min\n✓ Ready to resume operations.']},
+  supply:{sub:'Supply & Medication Room',stats:{tasks:0,acc:'—',lat:'—'},
+    outs:['INVENTORY SCAN — Automated\n→ Items checked: 342\n→ Par level alerts: 4 items low\n→ Controlled substances: reconciled ✓\n→ Restock order generated\n✓ Supply chain notified.']},
+};
+['pt101','pt102','pt103','pt104','pt105','pt201','pt202','pt203','pt204'].forEach(id=>{
+  const r=getRoomById(id);
+  SD[id]={sub:`Patient Room — ${r?r.patient:'PT-XXXX'}`,stats:{tasks:0,acc:'—',lat:'—'},
+    outs:[`CHART REVIEW — ${r?r.patient:'PT-XXXX'}\n→ Vitals: stable\n→ SpO2: 97% RA · HR: 78 · BP: 128/82\n→ Meds reviewed: no interactions\n→ Morning labs: pending\n→ Ambulation: PT consult ordered\n✓ Assessment complete. Chart updated.`]};
+});
+
+// ══════════════════════════════════════════════════════════════
+//  AGENT DEFINITIONS
+// ══════════════════════════════════════════════════════════════
 const AGENT_DEFS=[
-  {id:'aria',name:'ARIA',role:'EHR Specialist',  color:'#00d4ff',home:'ehr'    },
-  {id:'nova',name:'NOVA',role:'NLP Processor',   color:'#00ff9f',home:'nlp'    },
-  {id:'deid',name:'DEID',role:'De-ID Agent',     color:'#ffaa00',home:'deid'   },
-  {id:'iris',name:'IRIS',role:'Imaging Analyst', color:'#bb66ff',home:'imaging'},
-  {id:'clio',name:'CLIO',role:'Clinical Scribe', color:'#ff4488',home:'notes'  },
-  {id:'vega',name:'VEGA',role:'Vitals Sentinel', color:'#4499ff',home:'vitals' },
+  {id:'aria',name:'ARIA',role:'EHR Specialist',  color:'#00d4ff',home:'aria_office'},
+  {id:'nova',name:'NOVA',role:'NLP Processor',   color:'#00ff9f',home:'nova_lab'},
+  {id:'deid',name:'DEID',role:'De-ID Agent',     color:'#ffaa00',home:'deid_vault'},
+  {id:'iris',name:'IRIS',role:'Imaging Analyst', color:'#bb66ff',home:'iris_suite'},
+  {id:'clio',name:'CLIO',role:'Clinical Scribe', color:'#ff4488',home:'notes_room'},
+  {id:'vega',name:'VEGA',role:'Vitals Sentinel', color:'#4499ff',home:'vitals_hub'},
 ];
 
-const CROSS=[
-  {from:'aria',to:'nlp',   msg:'Routing EHR note batch → NLP entity extraction'},
-  {from:'nova',to:'deid',  msg:'Processed text → De-ID before research export'},
-  {from:'iris',to:'notes', msg:'Imaging findings → Clinical note builder'},
-  {from:'deid',to:'ehr',   msg:'Anonymized dataset → EHR analytics warehouse'},
-  {from:'clio',to:'ehr',   msg:'Scribed note → Pushing to EHR for attestation'},
-  {from:'vega',to:'nlp',   msg:'Alert text → NLP severity classification'},
-  {from:'nova',to:'vitals',msg:'NLP-extracted vitals → Monitoring engine'},
-  {from:'iris',to:'deid',  msg:'DICOM metadata → De-ID pipeline for research'},
+// Who talks to whom and when
+const COLLAB=[
+  {a:'aria',b:'nova', msg:'EHR batch → NLP extraction pipeline'},
+  {a:'nova',b:'deid', msg:'NLP output → de-identification pass'},
+  {a:'iris',b:'clio', msg:'Imaging findings → note generation'},
+  {a:'deid',b:'aria', msg:'Anonymized dataset → EHR analytics'},
+  {a:'clio',b:'aria', msg:'Scribed note → EHR attestation queue'},
+  {a:'vega',b:'nova', msg:'Alert text → NLP severity scoring'},
+  {a:'aria',b:'vega', msg:'Med order → vitals watch trigger'},
+  {a:'nova',b:'iris', msg:'NLP annotations → imaging AI corr.'},
+  {a:'iris',b:'deid', msg:'DICOM metadata → de-ID pipeline'},
+  {a:'vega',b:'aria', msg:'Sepsis alert → EHR protocol order'},
 ];
 
-// ══════════════════════════════════════════════════════
-// CANVAS
-// ══════════════════════════════════════════════════════
+const WANDER_ROOMS=['conference','nurses_stn','break_room','pt101','pt102','pt103','pt104','pt105','pt201','pt202'];
+const TASK_LABELS=['Processing batch input','Running inference pipeline','Validating output schema',
+  'Cross-referencing clinical data','Generating structured report','Applying regulatory filters',
+  'Updating knowledge index','Executing compliance check','Reviewing patient chart','Syncing EHR records'];
+
+// ══════════════════════════════════════════════════════════════
+//  CANVAS SETUP
+// ══════════════════════════════════════════════════════════════
 const canvas=document.getElementById('gc');
 const ctx=canvas.getContext('2d');
 let CW,CH,OX,OY;
+const cam={x:0,y:0};
 
-function resize(){
-  const t=getTileSize();TW=t.TW;TH=t.TH;
-  const wrap=document.getElementById('canvas-wrap');
+function doResize(){
+  const t=calcTileSize();TW=t.TW;TH=t.TH;
+  const wrap=document.getElementById('cw');
   CW=wrap.clientWidth;CH=wrap.clientHeight;
   canvas.width=CW;canvas.height=CH;
-  const isMob=window.innerWidth<768;
-  OX=CW/2+(isMob?0:20);
-  OY=isMob?38:55;
+  const mob=window.innerWidth<768;
+  OX=CW/2+(mob?0:18);
+  OY=mob?34:52;
 }
 
-function ts(gx,gy){return{x:(gx-gy)*(TW/2)+OX,y:(gx+gy)*(TH/2)+OY};}
+// Grid→screen
+function ts(gx,gy){return{x:(gx-gy)*(TW/2)+OX+cam.x, y:(gx+gy)*(TH/2)+OY+cam.y};}
+// Screen→grid (fractional)
+function sg(sx,sy){
+  const ax=sx-OX-cam.x, ay=sy-OY-cam.y;
+  return{gx:(ax/TW+ay/TH), gy:(ay/TH-ax/TW)};
+}
 
-// ══════════════════════════════════════════════════════
-// DRAW
-// ══════════════════════════════════════════════════════
-function tile(gx,gy,fill,stroke){
+// ══════════════════════════════════════════════════════════════
+//  DRAW PRIMITIVES
+// ══════════════════════════════════════════════════════════════
+function diamond(gx,gy,fill,stroke,lw=0.5){
   const{x,y}=ts(gx,gy);const hw=TW/2,hh=TH/2;
   ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+hw,y+hh);ctx.lineTo(x,y+TH);ctx.lineTo(x-hw,y+hh);ctx.closePath();
   if(fill){ctx.fillStyle=fill;ctx.fill();}
-  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=.6;ctx.stroke();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke();}
 }
 
-function isoBox(gx,gy,bh,rf,lf,tf,ol){
-  const{x,y}=ts(gx,gy);const hw=TW/2,hh=TH/2;
-  // right
-  ctx.beginPath();ctx.moveTo(x+hw,y+hh-bh);ctx.lineTo(x,y+TH-bh);ctx.lineTo(x,y+TH);ctx.lineTo(x+hw,y+hh);ctx.closePath();
-  ctx.fillStyle=rf;ctx.fill();if(ol){ctx.strokeStyle=ol;ctx.lineWidth=.5;ctx.stroke();}
-  // left
-  ctx.beginPath();ctx.moveTo(x-hw,y+hh-bh);ctx.lineTo(x,y+TH-bh);ctx.lineTo(x,y+TH);ctx.lineTo(x-hw,y+hh);ctx.closePath();
-  ctx.fillStyle=lf;ctx.fill();if(ol){ctx.strokeStyle=ol;ctx.lineWidth=.5;ctx.stroke();}
-  // top
-  ctx.beginPath();ctx.moveTo(x,y-bh);ctx.lineTo(x+hw,y+hh-bh);ctx.lineTo(x,y+TH-bh);ctx.lineTo(x-hw,y+hh-bh);ctx.closePath();
-  ctx.fillStyle=tf;ctx.fill();if(ol){ctx.strokeStyle=ol;ctx.lineWidth=.5;ctx.stroke();}
+function wallV(gx,gy,h,col){
+  // Vertical wall going to the right of tile gx,gy (faces viewer from bottom-right)
+  const A=ts(gx+1,gy), B=ts(gx+1,gy+1);
+  ctx.beginPath();
+  ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);
+  ctx.lineTo(B.x,B.y-h);ctx.lineTo(A.x,A.y-h);
+  ctx.closePath();ctx.fillStyle=col;ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=.4;ctx.stroke();
 }
 
-function drawStation(st){
-  const{gx,gy,c,cd,cdd,id}=st;
-  const{x,y}=ts(gx,gy);
-  const hw=TW*.42,hh=TH*.42;
-  const dh=Math.round(TH*.5);
-  const wA=G.agents.find(a=>a.state==='working'&&a.tStation===id);
-  const glow=wA?.55+.45*Math.sin(G.tick*.09):.18;
+function wallH(gx,gy,h,col){
+  // Horizontal wall going down from tile gx,gy (faces viewer from bottom-left)
+  const A=ts(gx,gy+1), B=ts(gx+1,gy+1);
+  ctx.beginPath();
+  ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);
+  ctx.lineTo(B.x,B.y-h);ctx.lineTo(A.x,A.y-h);
+  ctx.closePath();ctx.fillStyle=col;ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=.4;ctx.stroke();
+}
 
-  tile(gx,gy,'#0c1a2e','#162a48');
+// Draw a raised ISO box spanning screen positions
+function isoBoxPts(tlx,tly,trx,try_,brx,bry,blx,bly,h,topC,rtC,ltC,outC){
+  // Top face
+  ctx.beginPath();ctx.moveTo(tlx,tly-h);ctx.lineTo(trx,try_-h);ctx.lineTo(brx,bry-h);ctx.lineTo(blx,bly-h);ctx.closePath();
+  ctx.fillStyle=topC;ctx.fill();if(outC){ctx.strokeStyle=outC;ctx.lineWidth=.6;ctx.stroke();}
+  // Right face (tr→br down)
+  ctx.beginPath();ctx.moveTo(trx,try_-h);ctx.lineTo(brx,bry-h);ctx.lineTo(brx,bry);ctx.lineTo(trx,try_);ctx.closePath();
+  ctx.fillStyle=rtC;ctx.fill();if(outC){ctx.strokeStyle=outC;ctx.lineWidth=.5;ctx.stroke();}
+  // Left face (bl→br down)
+  ctx.beginPath();ctx.moveTo(blx,bly-h);ctx.lineTo(brx,bry-h);ctx.lineTo(brx,bry);ctx.lineTo(blx,bly);ctx.closePath();
+  ctx.fillStyle=ltC;ctx.fill();if(outC){ctx.strokeStyle=outC;ctx.lineWidth=.5;ctx.stroke();}
+}
 
-  ctx.beginPath();ctx.moveTo(x+hw,y+hh-dh);ctx.lineTo(x,y+2*hh-dh);ctx.lineTo(x,y+2*hh);ctx.lineTo(x+hw,y+hh);ctx.closePath();
-  ctx.fillStyle=cdd;ctx.fill();ctx.strokeStyle=c+'55';ctx.lineWidth=.6;ctx.stroke();
-  ctx.beginPath();ctx.moveTo(x-hw,y+hh-dh);ctx.lineTo(x,y+2*hh-dh);ctx.lineTo(x,y+2*hh);ctx.lineTo(x-hw,y+hh);ctx.closePath();
-  ctx.fillStyle=cd;ctx.fill();ctx.strokeStyle=c+'55';ctx.lineWidth=.6;ctx.stroke();
-  ctx.beginPath();ctx.moveTo(x,y-dh);ctx.lineTo(x+hw,y+hh-dh);ctx.lineTo(x,y+2*hh-dh);ctx.lineTo(x-hw,y+hh-dh);ctx.closePath();
-  ctx.fillStyle=c;ctx.globalAlpha=.25+glow*.35;ctx.fill();ctx.globalAlpha=1;
-  ctx.strokeStyle=c+'88';ctx.lineWidth=.8;ctx.stroke();
+function isoBox(x1,y1,x2,y2,h,topC,rtC,ltC,outC){
+  const TL=ts(x1,y1),TR=ts(x2,y1),BR=ts(x2,y2),BL=ts(x1,y2);
+  isoBoxPts(TL.x,TL.y,TR.x,TR.y,BR.x,BR.y,BL.x,BL.y,h,topC,rtC,ltC,outC);
+}
 
-  const mh=Math.max(8,TH*.32);const my2=y-dh-mh;const mw=Math.max(6,TW*.12);const mhh=Math.max(4,TH*.16);
-  ctx.beginPath();ctx.moveTo(x-mw,my2+mhh-mh);ctx.lineTo(x,my2+2*mhh-mh);ctx.lineTo(x,my2+2*mhh);ctx.lineTo(x-mw,my2+mhh);ctx.closePath();ctx.fillStyle=cdd;ctx.globalAlpha=.9;ctx.fill();ctx.globalAlpha=1;
-  ctx.beginPath();ctx.moveTo(x+mw,my2+mhh-mh);ctx.lineTo(x,my2+2*mhh-mh);ctx.lineTo(x,my2+2*mhh);ctx.lineTo(x+mw,my2+mhh);ctx.closePath();ctx.fillStyle=cd;ctx.globalAlpha=.9;ctx.fill();ctx.globalAlpha=1;
-  ctx.beginPath();ctx.moveTo(x,my2-mh);ctx.lineTo(x+mw,my2+mhh-mh);ctx.lineTo(x,my2+2*mhh-mh);ctx.lineTo(x-mw,my2+mhh-mh);ctx.closePath();
-  if(wA){ctx.shadowColor=c;ctx.shadowBlur=12;ctx.fillStyle=c;ctx.globalAlpha=.85+.15*Math.sin(G.tick*.12);}
-  else{ctx.fillStyle='#1a3050';ctx.globalAlpha=.7;}
-  ctx.fill();ctx.globalAlpha=1;ctx.shadowBlur=0;
+function hexBright(h,amt){
+  const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
+  const c=(v)=>Math.max(0,Math.min(255,v+amt));
+  return`rgb(${c(r)},${c(g)},${c(b)})`;
+}
 
-  const fs=Math.max(7,TW*.115);
-  ctx.font=`${fs}px var(--mono)`;ctx.textAlign='center';ctx.fillStyle=c;ctx.globalAlpha=.85;
-  ctx.fillText(st.name,x,y-dh-mh*2-7);ctx.globalAlpha=1;
+// ══════════════════════════════════════════════════════════════
+//  ROOM RENDERING
+// ══════════════════════════════════════════════════════════════
+function floorColor(room){
+  const base={office:'#040e1c',conference:'#050a14',patient:'#040912',nurses:'#030c16',break:'#060c05',supply:'#0a0804'};
+  return base[room.type]||'#040c18';
+}
 
-  if(wA){
-    const pr=3+1.5*Math.sin(G.tick*.12);
-    ctx.beginPath();ctx.arc(x,y-dh-mh*2-15,pr,0,Math.PI*2);
-    ctx.fillStyle=c;ctx.globalAlpha=.5+.5*Math.sin(G.tick*.12);ctx.fill();ctx.globalAlpha=1;
+function drawRoomFloor(room){
+  const alt=(room.x1+room.y1)%2===0;
+  const fc=floorColor(room);
+  for(let x=room.x1;x<=room.x2;x++){
+    for(let y=room.y1;y<=room.y2;y++){
+      const col=((x+y)%2===0)?fc:hexBright(fc,3);
+      diamond(x,y,col,null);
+    }
   }
-}
-
-function drawAgent(ag){
-  const s=ts(ag.x,ag.y);const px=s.x,py=s.y+TH/2-2;
-  const sc=TW/68;
-  const bob=ag.state==='working'?Math.sin(G.tick*.18)*2:0;
-  const wlk=ag.state==='walking'?Math.sin(G.tick*.22)*2.5:0;
-  const H=Math.round(36*sc);const oy=py-H+bob+wlk;
-
-  ctx.beginPath();ctx.ellipse(px,py,8*sc,3.5*sc,0,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,.5)';ctx.fill();
-
-  const ls=ag.state==='walking'?Math.sin(G.tick*.22)*3:0;
-  ctx.fillStyle='#111e30';
-  ctx.fillRect(px-5*sc+ls,oy+22*sc,4*sc,8*sc);
-  ctx.fillRect(px+1*sc-ls,oy+22*sc,4*sc,8*sc);
-
-  ctx.fillStyle='#deeeff';
-  ctx.beginPath();if(ctx.roundRect)ctx.roundRect(px-7*sc,oy+10*sc,14*sc,13*sc,2);else ctx.rect(px-7*sc,oy+10*sc,14*sc,13*sc);ctx.fill();
-
-  if(ag.state==='working'){ctx.shadowColor=ag.color;ctx.shadowBlur=10;}
-  ctx.fillStyle=ag.color;ctx.fillRect(px-3*sc,oy+12*sc,6*sc,9*sc);ctx.shadowBlur=0;
-
-  ctx.fillStyle='#deeeff';ctx.fillRect(px-11*sc,oy+11*sc,4*sc,7*sc);ctx.fillRect(px+7*sc,oy+11*sc,4*sc,7*sc);
-  ctx.fillStyle='#e8c9a0';ctx.fillRect(px-2*sc,oy+6*sc,4*sc,5*sc);
-
-  ctx.shadowColor=ag.color;ctx.shadowBlur=ag.state==='working'?12:4;
-  ctx.beginPath();ctx.arc(px,oy+4*sc,6*sc,0,Math.PI*2);ctx.fillStyle='#e8c9a0';ctx.fill();ctx.shadowBlur=0;
-  ctx.beginPath();ctx.arc(px,oy+2*sc,6*sc,-Math.PI,0);ctx.fillStyle=ag.color;ctx.fill();
-
-  if(TW>=40){
-    const fs=Math.max(6,8*sc);
-    ctx.font=`bold ${fs}px var(--mono)`;ctx.textAlign='center';ctx.fillStyle=ag.color;ctx.shadowColor=ag.color;ctx.shadowBlur=5;
-    ctx.fillText(ag.name,px,oy-3*sc);ctx.shadowBlur=0;
-  }
-
-  if(ag.state==='working'){
-    for(const p of ag.particles){
-      ctx.beginPath();ctx.arc(px+p.ox,oy-p.life*22*sc,1.5*sc,0,Math.PI*2);
-      ctx.fillStyle=ag.color;ctx.globalAlpha=Math.max(0,1-p.life);ctx.fill();ctx.globalAlpha=1;
+  // Room-color tinted border tiles
+  for(let x=room.x1;x<=room.x2;x++){
+    for(let y=room.y1;y<=room.y2;y++){
+      const edge=(x===room.x1||x===room.x2||y===room.y1||y===room.y2);
+      if(edge){
+        diamond(x,y,room.color+'0a',room.color+'33',.4);
+      }
     }
   }
 }
 
-function drawPath(ag){
-  if(ag.state!=='walking')return;
-  const f=ts(ag.x,ag.y),t=ts(ag.tx,ag.ty);
-  ctx.beginPath();ctx.moveTo(f.x,f.y+TH/2);ctx.lineTo(t.x,t.y+TH/2);
-  ctx.strokeStyle=ag.color+'44';ctx.lineWidth=1;ctx.setLineDash([3,5]);ctx.stroke();ctx.setLineDash([]);
+function drawRoomLabel(room){
+  const cx=(room.x1+room.x2)/2, cy=(room.y1+room.y2)/2;
+  const p=ts(cx,cy);
+  ctx.save();
+  ctx.textAlign='center';
+  const fs=Math.max(6,TW*.105);
+  ctx.font=`${fs}px var(--mono)`;
+  ctx.fillStyle=room.color+'bb';
+  ctx.shadowColor=room.color;ctx.shadowBlur=6;
+  ctx.fillText(room.icon||'',p.x,p.y+TH/2-6);
+  if(TW>40){
+    ctx.shadowBlur=0;
+    ctx.font=`${Math.max(5,fs*.8)}px var(--mono)`;
+    ctx.fillStyle=room.color+'77';
+    ctx.fillText(room.name,p.x,p.y+TH/2+fs+2);
+  }
+  ctx.restore();
 }
 
-function renderRoom(){
-  const BH_BACK=38*(TH/34),BH_SIDE=28*(TH/34);
+function drawFurniture(room){
+  const mx=(room.x1+room.x2)/2, my=(room.y1+room.y2)/2;
+  const bh=TH*.42;
+  const c=room.color, cd=hexBright(c,-60), cdd=hexBright(c,-90);
+  switch(room.type){
+    case 'office':{
+      // Desk
+      const dx=room.x1+.25,dy=room.y1+.25;
+      isoBox(dx,dy,dx+.7,dy+.5,bh,c+'55',cd+'88',cdd+'88',c+'44');
+      // Monitor
+      const mp=ts(dx+.1,dy+.1);
+      ctx.fillStyle='#020a12';ctx.fillRect(mp.x-7,mp.y-bh-15,14,11);
+      ctx.fillStyle=c+'cc';ctx.fillRect(mp.x-6,mp.y-bh-14,12,9);
+      if(G.tick%40<20)ctx.fillStyle=c+'55';else ctx.fillStyle=c+'33';
+      ctx.fillRect(mp.x-4,mp.y-bh-12,8,5);
+      // Chair
+      isoBox(mx-.2,my-.2,mx+.2,my+.2,bh*.55,'#1a2840','#0e1828','#0a1420',null);
+      break;
+    }
+    case 'patient':{
+      const bw=1.4,bd=.65,bx=mx-.7,by=my-.3;
+      isoBox(bx,by,bx+bw,by+bd,bh,'#d0e8ff','#a0c0e0','#80a8cc','#ffffff25');
+      // Pillow
+      const pp=ts(bx,by);
+      ctx.fillStyle='rgba(255,255,255,.4)';
+      ctx.beginPath();ctx.ellipse(pp.x+TW*.15,pp.y-bh+2,TW*.07,TH*.06,0,0,Math.PI*2);ctx.fill();
+      // Blanket color tint
+      isoBox(bx+.3,by,bx+bw,by+bd,bh*.6,room.color+'15',room.color+'10',room.color+'08',null);
+      // IV pole
+      const ivp=ts(bx+bw+.15,by);
+      ctx.strokeStyle='rgba(180,200,220,.5)';ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(ivp.x,ivp.y);ctx.lineTo(ivp.x,ivp.y-TH*1.4);ctx.stroke();
+      ctx.fillStyle='rgba(0,212,255,.35)';ctx.fillRect(ivp.x-5,ivp.y-TH*1.4-7,10,7);
+      // Patient ID
+      const pidp=ts(mx,my);
+      ctx.font=`${Math.max(6,TW*.09)}px var(--mono)`;ctx.textAlign='center';
+      ctx.fillStyle='rgba(120,180,220,.45)';
+      if(TW>42)ctx.fillText(room.patient||'',pidp.x,pidp.y-bh*1.2);
+      break;
+    }
+    case 'conference':{
+      const tw=2.6,td=2.2;
+      isoBox(mx-tw/2,my-td/2,mx+tw/2,my+td/2,bh*.55,'#121c30','#0a1220','#08101c','#2a3d5533');
+      // Screen on back wall
+      const sp=ts(mx-.5,room.y1+.1);
+      ctx.fillStyle='#003366bb';ctx.fillRect(sp.x-2,sp.y-bh*.55-22,4,18);
+      ctx.fillStyle='#0066cc55';ctx.fillRect(sp.x-1.5,sp.y-bh*.55-21,3,16);
+      // Chairs around table
+      [[-1.2,0],[1.1,0],[0,-1.1],[0,1.0],[-.8,-.7],[.8,-.7],[-.8,.7],[.8,.7]].forEach(([ox,oy])=>{
+        isoBox(mx+ox-.15,my+oy-.15,mx+ox+.15,my+oy+.15,bh*.38,'#1c2c44','#121e30','#0e1828',null);
+      });
+      break;
+    }
+    case 'nurses':{
+      // L-shaped counter
+      isoBox(room.x1+.1,room.y1+.1,room.x1+2.5,room.y1+.5,bh,'#051624','#030e18','#020a12','#0099cc33');
+      isoBox(room.x1+.1,room.y1+.1,room.x1+.5,room.y1+2.8,bh,'#051624','#030e18','#020a12','#0099cc33');
+      // Monitors on counter
+      for(let i=0;i<3;i++){
+        const mp=ts(room.x1+.25+i*.6,room.y1+.15);
+        ctx.fillStyle='#003355bb';ctx.fillRect(mp.x-5,mp.y-bh-12,10,9);
+        ctx.fillStyle='rgba(0,212,255,.25)';ctx.fillRect(mp.x-4,mp.y-bh-11,8,7);
+      }
+      break;
+    }
+    case 'break':{
+      isoBox(mx-.5,my-.5,mx+.5,my+.5,bh*.35,'#1a2e14','#101e0c','#0c1808',null);
+      [[-0.7,.0],[.0,-.7],[.6,.0],[.0,.6]].forEach(([ox,oy])=>{
+        isoBox(mx+ox-.18,my+oy-.18,mx+ox+.18,my+oy+.18,bh*.28,'#0e1a0a','#08120a','#060e06',null);
+      });
+      break;
+    }
+    case 'supply':{
+      for(let i=0;i<2;i++){
+        isoBox(room.x1+.1,room.y1+.2+i*.7,room.x1+.85,room.y1+.5+i*.7,bh,'#1a0e06','#100a04','#0c0802','#55330022');
+      }
+      break;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  WALL RENDERING
+// ══════════════════════════════════════════════════════════════
+const WH=TH*1.6; // wall height (will scale with TH)
+
+function drawAllWalls(){
+  const wh=TH*1.6;
+  // We must draw walls in painter's order (back→front)
+  // Draw along columns first (right-face walls), then rows (left-face walls)
   for(let sum=0;sum<=GW+GH-2;sum++){
     for(let gx=0;gx<GW;gx++){
       const gy=sum-gx;if(gy<0||gy>=GH)continue;
-      if(gy===0){
-        isoBox(gx,gy,BH_BACK,'#080e20','#060f1e','#0c1c30','#1a3050');
-      } else if(gx===0){
-        const{x,y}=ts(gx,gy);const hw=TW/2,hh=TH/2;
-        ctx.beginPath();ctx.moveTo(x-hw,y+hh-BH_SIDE);ctx.lineTo(x,y+TH-BH_SIDE);ctx.lineTo(x,y+TH);ctx.lineTo(x-hw,y+hh);ctx.closePath();ctx.fillStyle='#04090e';ctx.fill();ctx.strokeStyle='#142030';ctx.lineWidth=.5;ctx.stroke();
-        ctx.beginPath();ctx.moveTo(x,y-BH_SIDE);ctx.lineTo(x+hw,y+hh-BH_SIDE);ctx.lineTo(x,y+TH-BH_SIDE);ctx.lineTo(x-hw,y+hh-BH_SIDE);ctx.closePath();ctx.fillStyle='#0a1828';ctx.fill();ctx.strokeStyle='#1a3050';ctx.lineWidth=.5;ctx.stroke();
-      } else {
-        const alt=(gx+gy)%2===0;
-        const isPath=gy===5||gx===4||gx===9;
-        tile(gx,gy,isPath?'#0d1e34':(alt?'#0c1b2e':'#0a1626'),isPath?'#1a3a60':'#132240');
-        if(isPath){const{x,y}=ts(gx,gy);ctx.beginPath();ctx.arc(x,y+TH/2,1.5,0,Math.PI*2);ctx.fillStyle='#1a3a60';ctx.globalAlpha=.6;ctx.fill();ctx.globalAlpha=1;}
+      const rid=RMAP[gx]&&RMAP[gx][gy];
+      const room=rid?getRoomById(rid):null;
+      if(!room)continue;
+      // Right boundary wall (between gx and gx+1)
+      if(gx===room.x2){
+        const nextRid=gx+1<GW?RMAP[gx+1][gy]:null;
+        if(nextRid!==rid){
+          // Choose wall color based on current room
+          const wc=hexBright(room.color,-70)+'dd';
+          const wc2=hexBright(room.color,-80)+'cc';
+          const A=ts(gx+1,gy),B=ts(gx+1,gy+1);
+          ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.lineTo(B.x,B.y-wh);ctx.lineTo(A.x,A.y-wh);ctx.closePath();
+          ctx.fillStyle=wc;ctx.fill();
+          ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=.5;ctx.stroke();
+          // Window on office rooms
+          if(room.type==='office'&&TW>44){
+            const wx=A.x+(B.x-A.x)*.3,wy=(A.y+B.y)/2-wh*.55;
+            ctx.fillStyle=room.color+'22';ctx.fillRect(wx-3,wy,6,wh*.25);
+            ctx.strokeStyle=room.color+'55';ctx.lineWidth=.5;ctx.strokeRect(wx-3,wy,6,wh*.25);
+          }
+        }
+      }
+      // Bottom boundary wall (between gy and gy+1)
+      if(gy===room.y2){
+        const nextRid=gy+1<GH?RMAP[gx][gy+1]:null;
+        if(nextRid!==rid){
+          const wc=hexBright(room.color,-80)+'bb';
+          const A=ts(gx,gy+1),B=ts(gx+1,gy+1);
+          ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.lineTo(B.x,B.y-wh);ctx.lineTo(A.x,A.y-wh);ctx.closePath();
+          ctx.fillStyle=wc;ctx.fill();
+          ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=.5;ctx.stroke();
+        }
       }
     }
   }
 }
 
-// ══════════════════════════════════════════════════════
-// AGENT CLASS
-// ══════════════════════════════════════════════════════
-const TASK_LABELS=['Processing batch input','Running inference pipeline','Validating output schema','Cross-referencing clinical data','Generating structured report','Applying regulatory filters','Updating knowledge index','Executing compliance check'];
+// Door openings — visual cutouts at room entrances
+const DOORS=[
+  {room:'aria_office', x:2,y:3,side:'b'},
+  {room:'nova_lab',    x:5,y:3,side:'b'},
+  {room:'deid_vault',  x:8,y:3,side:'b'},
+  {room:'iris_suite',  x:11,y:3,side:'b'},
+  {room:'notes_room',  x:14,y:3,side:'b'},
+  {room:'vitals_hub',  x:17,y:3,side:'b'},
+  {room:'conference',  x:0,y:8,side:'r'},
+  {room:'nurses_stn',  x:17,y:8,side:'l'},
+  {room:'pt101',       x:7,y:5,side:'t'},
+  {room:'pt102',       x:11,y:5,side:'t'},
+  {room:'pt103',       x:15,y:5,side:'t'},
+  {room:'pt104',       x:7,y:8,side:'t'},
+  {room:'pt105',       x:11,y:8,side:'t'},
+  {room:'break_room',  x:15,y:8,side:'t'},
+  {room:'pt201',       x:2,y:12,side:'t'},
+  {room:'pt202',       x:7,y:12,side:'t'},
+  {room:'pt203',       x:12,y:12,side:'t'},
+  {room:'pt204',       x:17,y:12,side:'t'},
+];
 
-class Agent{
-  constructor(d){
-    this.id=d.id;this.name=d.name;this.role=d.role;this.color=d.color;this.home=d.home;
-    const hS=STATIONS.find(s=>s.id===d.home);
-    this.x=hS.gx+.4;this.y=hS.gy+2;
-    this.state='idle';this.tStation=null;this.tx=this.x;this.ty=this.y;
-    this.workTimer=0;this.idleTimer=60+Math.random()*100;
-    this.task='';this.taskProgress=0;this.particles=[];this.tasksDone=0;
-  }
-  update(){
-    this.idleTimer--;
-    if(this.state==='working'&&G.tick%4===0)this.particles.push({ox:(Math.random()-.5)*14,life:0});
-    this.particles=this.particles.map(p=>({...p,life:p.life+.025})).filter(p=>p.life<1);
-    if(this.state==='walking'){
-      const dx=this.tx-this.x,dy=this.ty-this.y,d=Math.hypot(dx,dy);
-      if(d>SPEED){this.x+=dx/d*SPEED;this.y+=dy/d*SPEED;}
-      else{
-        this.x=this.tx;this.y=this.ty;
-        if(this.tStation==='__home__'){this.state='idle';this.task='';this.idleTimer=80+Math.random()*120;}
-        else{
-          this.state='working';this.workTimer=180+Math.random()*200;this.taskProgress=0;
-          const st=STATIONS.find(s=>s.id===this.tStation);
-          if(st){st.stats.tasks++;G.taskCount++;this.task=TASK_LABELS[Math.floor(Math.random()*8)];addLog(this.name,this.color,`▶ ${st.name}: ${this.task}`);}
-        }
-      }
-    } else if(this.state==='working'){
-      this.workTimer--;this.taskProgress=1-(this.workTimer/350);
-      if(this.workTimer<=0){
-        this.tasksDone++;
-        const st=STATIONS.find(s=>s.id===this.tStation);
-        addLog(this.name,this.color,`✓ Complete at ${st?st.name:'station'}`);
-        this._goHome();
-      }
-    } else if(this.state==='idle'&&this.idleTimer<=0){this._dispatch();}
-  }
-  _goHome(){const hS=STATIONS.find(s=>s.id===this.home);this.tx=hS.gx+.4;this.ty=hS.gy+2;this.tStation='__home__';this.state='walking';}
-  _dispatch(){
-    let tid;
-    if(Math.random()<.72){tid=this.home;}
-    else{const ct=CROSS.find(c=>c.from===this.id);if(ct&&Math.random()<.55){tid=ct.to;addLog(this.name,this.color,`⇄ ${ct.msg}`);}else tid=this.home;}
-    const st=STATIONS.find(s=>s.id===tid);
-    if(st){this.tStation=tid;this.tx=st.gx+.4;this.ty=st.gy+1.8;this.state='walking';addLog(this.name,this.color,`→ Routing to ${st.name}`);}
-  }
-  get badge(){
-    if(this.state==='working')return{t:'WORKING',c:'b-work'};
-    if(this.state==='walking')return{t:'ROUTING',c:'b-walk'};
-    return{t:'IDLE',c:'b-idle'};
-  }
-}
-
-// ══════════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════════
-const G={agents:[],tick:0,taskCount:0,uptime:0};
-
-// ══════════════════════════════════════════════════════
-// RENDER
-// ══════════════════════════════════════════════════════
-function render(){
-  ctx.clearRect(0,0,CW,CH);
-  const bg=ctx.createRadialGradient(CW/2,CH/2,0,CW/2,CH/2,CW*.75);
-  bg.addColorStop(0,'#060d1c');bg.addColorStop(1,'#020508');
-  ctx.fillStyle=bg;ctx.fillRect(0,0,CW,CH);
-  renderRoom();
-  [...STATIONS].sort((a,b)=>(a.gx+a.gy)-(b.gx+b.gy)).forEach(s=>drawStation(s));
-  G.agents.forEach(a=>drawPath(a));
-  [...G.agents].sort((a,b)=>(a.x+a.y)-(b.x+b.y)).forEach(a=>drawAgent(a));
-  for(let sy=0;sy<CH;sy+=4){ctx.fillStyle='rgba(0,0,0,.05)';ctx.fillRect(0,sy,CW,1);}
-  const vig=ctx.createRadialGradient(CW/2,CH/2,CW*.3,CW/2,CH/2,CW*.85);
-  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.4)');
-  ctx.fillStyle=vig;ctx.fillRect(0,0,CW,CH);
-}
-
-// ══════════════════════════════════════════════════════
-// UI
-// ══════════════════════════════════════════════════════
-function agentCardHTML(ag){
-  const b=ag.badge;
-  const prog=ag.state==='working'
-    ?`<div class="aprog"><div class="aprog-fill" style="width:${Math.min(100,(ag.taskProgress||0)*100).toFixed(0)}%;background:${ag.color}"></div></div>`:'';
-  return`<div class="acard-top"><div class="adot" style="background:${ag.color};box-shadow:0 0 6px ${ag.color}88"></div><span class="aname">${ag.name}</span><span class="abadge ${b.c}">${b.t}</span></div><div class="arole">${ag.role}</div><div class="atask">${ag.task||'Awaiting task assignment...'}</div>${prog}`;
-}
-
-function populateList(elId){
-  const el=document.getElementById(elId);if(!el)return;
-  el.innerHTML='';
-  G.agents.forEach(ag=>{
-    const card=document.createElement('div');
-    card.className=`acard${ag.state==='working'?' on':''}`;
-    card.innerHTML=agentCardHTML(ag);
-    card.onclick=()=>{const hS=STATIONS.find(s=>s.id===ag.home);if(hS)openModal(hS,ag);};
-    el.appendChild(card);
+function drawDoors(){
+  const wh=TH*1.6;
+  DOORS.forEach(d=>{
+    const room=getRoomById(d.room);if(!room)return;
+    const col=room.color+'44';
+    // Draw a door-colored gap
+    const p=ts(d.x,d.y);
+    ctx.fillStyle=col;
+    if(d.side==='b'||d.side==='t'){
+      // Horizontal wall door gap
+      const A=ts(d.x-.4,d.y+(d.side==='b'?1:.0)),B=ts(d.x+.4,d.y+(d.side==='b'?1:.0));
+      ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.lineTo(B.x,B.y-wh*.7);ctx.lineTo(A.x,A.y-wh*.7);ctx.closePath();
+      ctx.fillStyle=room.color+'22';ctx.fill();
+      // Door frame
+      ctx.strokeStyle=room.color+'66';ctx.lineWidth=.8;ctx.stroke();
+    }
   });
 }
 
-let uiTick=0;
+// ══════════════════════════════════════════════════════════════
+//  HALLWAY FLOOR
+// ══════════════════════════════════════════════════════════════
+function drawHallways(){
+  for(let x=0;x<GW;x++){
+    for(let y=0;y<GH;y++){
+      if(!RMAP[x][y]){
+        const alt=(x+y)%2===0;
+        diamond(x,y,alt?'#070f1c':'#060d18','#0c1a30',.3);
+        // corridor line markings
+        if(y===4||y===11){
+          const{x:px,y:py}=ts(x,y);
+          ctx.beginPath();ctx.moveTo(px,py+TH*.45);ctx.lineTo(px+TW/2,py+TH*.95);
+          ctx.strokeStyle='rgba(0,212,255,.06)';ctx.lineWidth=.8;ctx.stroke();
+        }
+      }
+    }
+  }
+}
+
+// Back wall
+function drawBackWalls(){
+  const wh=TH*2.2;
+  for(let x=0;x<GW;x++){
+    const A=ts(x,0),B=ts(x+1,0);
+    // right face of back row
+    ctx.beginPath();ctx.moveTo(B.x,B.y);ctx.lineTo(B.x,B.y-wh);ctx.lineTo(A.x,A.y-wh);ctx.lineTo(A.x,A.y);ctx.closePath();
+    ctx.fillStyle='#04101e';ctx.fill();
+    ctx.strokeStyle='#0c1c34';ctx.lineWidth=.4;ctx.stroke();
+    // Top cap
+    diamond(x,0,'#060d1c','#0e1c38',.3);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  HIGHLIGHT TILE SELECTION
+// ══════════════════════════════════════════════════════════════
+function drawHighlight(gx,gy,color,pulse){
+  const a=pulse?(.4+.4*Math.sin(G.tick*.12)):.55;
+  diamond(gx,gy,null,color+Math.floor(a*255).toString(16).padStart(2,'0'),1.2);
+}
+
+function drawRoomHighlight(room,color){
+  for(let x=room.x1;x<=room.x2;x++){
+    for(let y=room.y1;y<=room.y2;y++){
+      const a=.12+.06*Math.sin(G.tick*.1);
+      diamond(x,y,color+Math.floor(a*255).toString(16).padStart(2,'0'),null);
+    }
+  }
+  // Outline
+  const TL=ts(room.x1,room.y1),TR=ts(room.x2+1,room.y1),BR=ts(room.x2+1,room.y2+1),BL=ts(room.x1,room.y2+1);
+  ctx.beginPath();ctx.moveTo(TL.x,TL.y);ctx.lineTo(TR.x,TR.y);ctx.lineTo(BR.x,BR.y);ctx.lineTo(BL.x,BL.y);ctx.closePath();
+  ctx.strokeStyle=color+'99';ctx.lineWidth=1;ctx.stroke();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  AGENT CLASS
+// ══════════════════════════════════════════════════════════════
+class Agent{
+  constructor(def){
+    Object.assign(this,def);
+    const hr=getRoomById(def.home);
+    const hx=(hr.x1+hr.x2)/2-.3, hy=(hr.y1+hr.y2)/2+.4;
+    this.x=hx;this.y=hy;
+    this.tx=hx;this.ty=hy;
+    this.state='idle';    // idle|walking|working|chatting|dragged
+    this.tRoom=def.home;
+    this.prevRoom=def.home;
+    this.workTimer=0;
+    this.idleTimer=Math.random()*120+60;
+    this.task='';
+    this.taskProgress=0;
+    this.particles=[];
+    this.chatBubble=null;
+    this.chatTimer=0;
+    this.tasksDone=0;
+    this.alertCount=0;
+    this.selected=false;
+    this.emotion='neutral'; // neutral|happy|busy|alert
+    this.pathColor=def.color;
+    this.flashTimer=0;
+    this.collab=null; // who we're currently collaborating with
+  }
+
+  get badge(){
+    if(this.state==='working')return{t:'WORKING',c:'bw'};
+    if(this.state==='walking')return{t:'ROUTING',c:'br'};
+    if(this.state==='chatting')return{t:'SYNC',c:'bw'};
+    if(this.state==='dragged')return{t:'DRAGGED',c:'br'};
+    return{t:'IDLE',c:'bi'};
+  }
+
+  update(){
+    if(this.state==='dragged')return;
+    this.idleTimer--;
+    this.flashTimer=Math.max(0,this.flashTimer-1);
+
+    // Particles
+    if((this.state==='working'||this.state==='chatting')&&G.tick%5===0){
+      this.particles.push({ox:(Math.random()-.5)*14,oy:0,life:0,c:this.color});
+    }
+    this.particles=this.particles.map(p=>({...p,life:p.life+.03})).filter(p=>p.life<1);
+
+    // Chat bubble decay
+    if(this.chatTimer>0){this.chatTimer--;if(this.chatTimer===0)this.chatBubble=null;}
+
+    // Walk
+    if(this.state==='walking'){
+      const dx=this.tx-this.x,dy=this.ty-this.y,d=Math.hypot(dx,dy);
+      if(d>SPD){this.x+=dx/d*SPD;this.y+=dy/d*SPD;}
+      else{
+        this.x=this.tx;this.y=this.ty;
+        if(this.tRoom==='__home__'){
+          this.tRoom=this.home;
+          this.state='idle';this.task='';this.idleTimer=80+Math.random()*120;
+        } else {
+          this.state='working';
+          this.workTimer=180+Math.random()*240;
+          this.taskProgress=0;
+          const sd=SD[this.tRoom];
+          if(sd){sd.stats.tasks++;G.taskCount++;this.task=TASK_LABELS[Math.floor(Math.random()*TASK_LABELS.length)];addLog(this.name,this.color,`▶ ${this.task} @ ${getRoomById(this.tRoom)?.name||this.tRoom}`);}
+        }
+      }
+    }
+    // Work
+    else if(this.state==='working'){
+      this.workTimer--;
+      this.taskProgress=1-(this.workTimer/(this.workTimer+1));
+      if(this.workTimer<=0){
+        this.tasksDone++;
+        addLog(this.name,this.color,`✓ Complete — ${getRoomById(this.tRoom)?.name||this.tRoom}`);
+        this.goHome();
+      }
+    }
+    // Idle → dispatch
+    else if(this.state==='idle'&&this.idleTimer<=0){
+      this.dispatch();
+    }
+  }
+
+  dispatch(forceRoom){
+    let target=forceRoom||null;
+    if(!target){
+      // 60% home, 25% wander, 15% collaborate
+      const r=Math.random();
+      if(r<.6) target=this.home;
+      else if(r<.85){
+        target=WANDER_ROOMS[Math.floor(Math.random()*WANDER_ROOMS.length)];
+      } else {
+        const cb=COLLAB.find(c=>c.a===this.id);
+        if(cb){
+          target=cb.b==='aria'?'aria_office':cb.b==='nova'?'nova_lab':cb.b==='deid'?'deid_vault':cb.b==='iris'?'iris_suite':cb.b==='clio'?'notes_room':'vitals_hub';
+          const partner=G.agents.find(a=>a.id===cb.b);
+          if(partner){
+            addLog(this.name,this.color,`⇄ ${cb.msg}`);
+            this.collab=cb.b;
+            setTimeout(()=>{if(partner.state==='idle'||partner.state==='working'){partner.say(cb.msg);}},1200);
+          }
+        } else target=this.home;
+      }
+    }
+    const room=getRoomById(target);
+    if(room){
+      this.tRoom=target;
+      this.tx=(room.x1+room.x2)/2+(.15-Math.random()*.3);
+      this.ty=(room.y1+room.y2)/2+(.3-Math.random()*.3);
+      this.state='walking';
+      this.prevRoom=this.tRoom;
+    }
+  }
+
+  goHome(){
+    const room=getRoomById(this.home);
+    if(room){
+      this.tRoom='__home__';
+      this.tx=(room.x1+room.x2)/2-.2+Math.random()*.3;
+      this.ty=(room.y1+room.y2)/2+.2+Math.random()*.3;
+      this.state='walking';
+      this.task='';
+      this.collab=null;
+    }
+  }
+
+  sendTo(roomId){
+    this.dispatch(roomId);
+  }
+
+  say(msg){
+    this.chatBubble=msg.length>28?msg.slice(0,28)+'…':msg;
+    this.chatTimer=120;
+  }
+
+  flash(){this.flashTimer=30;}
+}
+
+// ══════════════════════════════════════════════════════════════
+//  AGENT RENDERING
+// ══════════════════════════════════════════════════════════════
+function drawAgent(ag){
+  const sp=ts(ag.x,ag.y);
+  const px=sp.x, py=sp.y+TH/2;
+  const sc=TW/64;
+  const bob=ag.state==='working'?Math.sin(G.tick*.2)*1.8:ag.state==='chatting'?Math.sin(G.tick*.15)*1.2:0;
+  const wlk=ag.state==='walking'?Math.sin(G.tick*.25)*2.5:0;
+  const H=32*sc;
+  const oy=py-H+bob+wlk;
+  const glow=ag.selected||ag.flashTimer>0?1:0;
+  const flashA=ag.flashTimer>0?(.3+.7*(ag.flashTimer/30)):0;
+
+  // Selection ring
+  if(ag.selected){
+    ctx.beginPath();ctx.ellipse(px,py,12*sc,5*sc,0,0,Math.PI*2);
+    ctx.strokeStyle=ag.color+'99';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=ag.color+'22';ctx.fill();
+  }
+  // Flash ring
+  if(ag.flashTimer>0){
+    ctx.beginPath();ctx.ellipse(px,py,14*sc*flashA,6*sc*flashA,0,0,Math.PI*2);
+    ctx.strokeStyle=ag.color+Math.floor(flashA*200).toString(16).padStart(2,'0');ctx.lineWidth=2;ctx.stroke();
+  }
+
+  // Shadow
+  ctx.beginPath();ctx.ellipse(px,py,8*sc,3.5*sc,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,.45)';ctx.fill();
+
+  // Legs
+  const ls=ag.state==='walking'?Math.sin(G.tick*.25)*3.5:0;
+  ctx.fillStyle='#0c1824';
+  ctx.fillRect(px-5*sc+ls,oy+22*sc,4*sc,8*sc);
+  ctx.fillRect(px+1*sc-ls,oy+22*sc,4*sc,8*sc);
+  // Shoes
+  ctx.fillStyle=ag.color+'66';
+  ctx.fillRect(px-6*sc+ls,oy+29*sc,5*sc,2.5*sc);
+  ctx.fillRect(px+.5*sc-ls,oy+29*sc,5*sc,2.5*sc);
+
+  // Lab coat body
+  if(ag.state==='working'||ag.state==='chatting'){ctx.shadowColor=ag.color;ctx.shadowBlur=12;}
+  ctx.fillStyle='#d8eeff';
+  ctx.beginPath();
+  if(ctx.roundRect)ctx.roundRect(px-7*sc,oy+10*sc,14*sc,13*sc,2);
+  else ctx.rect(px-7*sc,oy+10*sc,14*sc,13*sc);
+  ctx.fill();ctx.shadowBlur=0;
+
+  // Color scrub patch
+  ctx.fillStyle=ag.color;ctx.fillRect(px-2.5*sc,oy+11.5*sc,5*sc,9*sc);
+  // Coat lapels
+  ctx.fillStyle='#c8e0f0';
+  ctx.fillRect(px-6.5*sc,oy+10*sc,3*sc,9*sc);
+  ctx.fillRect(px+3.5*sc,oy+10*sc,3*sc,9*sc);
+
+  // Arms
+  ctx.fillStyle='#d8eeff';
+  ctx.fillRect(px-11*sc,oy+10.5*sc,4*sc,7*sc);
+  ctx.fillRect(px+7*sc,oy+10.5*sc,4*sc,7*sc);
+
+  // Neck
+  ctx.fillStyle='#e0c090';ctx.fillRect(px-2*sc,oy+6*sc,4*sc,5*sc);
+
+  // Head
+  ctx.shadowColor=ag.color;ctx.shadowBlur=ag.selected?14:(ag.state==='working'?8:3);
+  ctx.beginPath();ctx.arc(px,oy+4*sc,6*sc,0,Math.PI*2);
+  ctx.fillStyle='#e0c090';ctx.fill();ctx.shadowBlur=0;
+
+  // Hair
+  ctx.beginPath();ctx.arc(px,oy+2*sc,6*sc,-Math.PI,0);
+  ctx.fillStyle=ag.color;ctx.fill();
+
+  // Eyes
+  ctx.fillStyle='#020810';
+  ctx.beginPath();ctx.arc(px-2*sc,oy+4*sc,1.2*sc,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(px+2*sc,oy+4*sc,1.2*sc,0,Math.PI*2);ctx.fill();
+  // Eye shine
+  ctx.fillStyle='rgba(255,255,255,.6)';
+  ctx.beginPath();ctx.arc(px-1.5*sc,oy+3.5*sc,.5*sc,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(px+2.5*sc,oy+3.5*sc,.5*sc,0,Math.PI*2);ctx.fill();
+
+  // Name tag
+  if(TW>=40){
+    const fs=Math.max(6,8*sc);
+    ctx.font=`bold ${fs}px var(--mono)`;ctx.textAlign='center';
+    ctx.fillStyle=ag.color;ctx.shadowColor=ag.color;ctx.shadowBlur=6;
+    ctx.fillText(ag.name,px,oy-4*sc);
+    ctx.shadowBlur=0;
+  }
+
+  // Work particles
+  if(ag.state==='working'||ag.state==='chatting'){
+    for(const p of ag.particles){
+      ctx.beginPath();ctx.arc(px+p.ox,oy-p.life*26*sc,1.8*sc,0,Math.PI*2);
+      ctx.fillStyle=ag.color;ctx.globalAlpha=Math.max(0,.9-p.life);ctx.fill();ctx.globalAlpha=1;
+    }
+  }
+
+  // Chat bubble
+  if(ag.chatBubble&&ag.chatTimer>0){
+    const fa=Math.min(1,ag.chatTimer/20);
+    const bw=Math.min(110,ag.chatBubble.length*5.5+14);
+    const bh=18,bx=px-bw/2,by=oy-H-bh-4;
+    ctx.globalAlpha=fa;
+    ctx.fillStyle='#050f20';ctx.strokeStyle=ag.color+'99';ctx.lineWidth=1;
+    ctx.beginPath();if(ctx.roundRect)ctx.roundRect(bx,by,bw,bh,4);else ctx.rect(bx,by,bw,bh);
+    ctx.fill();ctx.stroke();
+    // tail
+    ctx.beginPath();ctx.moveTo(px-4,by+bh);ctx.lineTo(px+4,by+bh);ctx.lineTo(px,by+bh+5);ctx.closePath();
+    ctx.fillStyle='#050f20';ctx.fill();
+    ctx.strokeStyle=ag.color+'66';ctx.lineWidth=.5;ctx.stroke();
+    ctx.font=`${Math.max(6,7*sc)}px var(--mono)`;ctx.textAlign='center';
+    ctx.fillStyle=ag.color;ctx.fillText(ag.chatBubble,px,by+bh-5);
+    ctx.globalAlpha=1;
+  }
+
+  // Drag ghost path
+  if(ag.state==='walking'){
+    const tp=ts(ag.tx,ag.ty);
+    ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(tp.x,tp.y+TH/2);
+    ctx.strokeStyle=ag.color+'33';ctx.lineWidth=.8;ctx.setLineDash([3,5]);ctx.stroke();ctx.setLineDash([]);
+    // Target marker
+    ctx.beginPath();ctx.arc(tp.x,tp.y+TH/2,3,0,Math.PI*2);
+    ctx.fillStyle=ag.color+'55';ctx.fill();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DATA PACKETS (agent–agent collab lines)
+// ══════════════════════════════════════════════════════════════
+const packets=[];
+function spawnPacket(fromAgent,toAgent,color){
+  packets.push({ax:fromAgent.x,ay:fromAgent.y,bx:toAgent.x,by:toAgent.y,t:0,color,id:Math.random()});
+}
+function updatePackets(){
+  for(const p of packets)p.t+=.015;
+  packets.splice(0,packets.length,...packets.filter(p=>p.t<=1));
+}
+function drawPackets(){
+  for(const p of packets){
+    const mx=p.ax+(p.bx-p.ax)*p.t;
+    const my=p.ay+(p.by-p.ay)*p.t;
+    const sp=ts(mx,my);
+    // Line from start to current
+    const sa=ts(p.ax,p.ay),sb=ts(p.bx,p.by);
+    ctx.beginPath();ctx.moveTo(sa.x,sa.y+TH/2);ctx.lineTo(sb.x,sb.y+TH/2);
+    ctx.strokeStyle=p.color+'22';ctx.lineWidth=.6;ctx.setLineDash([2,6]);ctx.stroke();ctx.setLineDash([]);
+    // Packet dot
+    ctx.beginPath();ctx.arc(sp.x,sp.y+TH/2,3,0,Math.PI*2);
+    ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════════
+function render(){
+  ctx.clearRect(0,0,CW,CH);
+  // BG gradient
+  const bg=ctx.createRadialGradient(CW/2,CH/2,0,CW/2,CH/2,Math.max(CW,CH)*.8);
+  bg.addColorStop(0,'#050d1e');bg.addColorStop(1,'#020508');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,CW,CH);
+
+  drawHallways();
+
+  // Painter's order: sort by x+y
+  const order=[];
+  for(let sum=0;sum<GW+GH-1;sum++)
+    for(let x=0;x<GW;x++){const y=sum-x;if(y>=0&&y<GH)order.push({x,y});}
+
+  // Draw floors and room highlights
+  const selRoom=G.selectedRoom?getRoomById(G.selectedRoom):null;
+  const sortedRooms=[...ROOMS].sort((a,b)=>(a.x1+a.y1)-(b.x1+b.y1));
+  sortedRooms.forEach(r=>drawRoomFloor(r));
+
+  // Room highlights
+  if(selRoom)drawRoomHighlight(selRoom,selRoom.color);
+  G.agents.forEach(ag=>{
+    if(ag.selected){
+      const cr=getRoomById(ag.tRoom==='__home__'?ag.home:ag.tRoom);
+      if(cr)drawRoomHighlight(cr,ag.color);
+    }
+  });
+
+  // Walls (behind furniture and agents)
+  drawAllWalls();
+  drawDoors();
+
+  // Furniture (painter's order)
+  sortedRooms.forEach(r=>drawFurniture(r));
+
+  // Packets
+  drawPackets();
+
+  // Agent path lines before agents
+  G.agents.forEach(ag=>{
+    if(ag.state==='walking'){
+      const sp=ts(ag.x,ag.y),tp=ts(ag.tx,ag.ty);
+      ctx.beginPath();ctx.moveTo(sp.x,sp.y+TH/2);ctx.lineTo(tp.x,tp.y+TH/2);
+      ctx.strokeStyle=ag.color+'33';ctx.lineWidth=.8;ctx.setLineDash([3,5]);ctx.stroke();ctx.setLineDash([]);
+    }
+  });
+
+  // Agents sorted back→front
+  [...G.agents].sort((a,b)=>(a.x+a.y)-(b.x+b.y)).forEach(ag=>drawAgent(ag));
+
+  // Room labels on top
+  sortedRooms.forEach(r=>drawRoomLabel(r));
+
+  // Drag ghost
+  if(G.dragging&&G.dragAgent){
+    const dg=G.dragAgent;
+    const p=ts(G.dragGX,G.dragGY);
+    ctx.beginPath();ctx.arc(p.x,p.y+TH/2,14,0,Math.PI*2);
+    ctx.fillStyle=dg.color+'22';ctx.strokeStyle=dg.color+'88';ctx.lineWidth=1.2;ctx.fill();ctx.stroke();
+    ctx.font=`bold ${Math.max(7,TW*.1)}px var(--mono)`;ctx.textAlign='center';
+    ctx.fillStyle=dg.color+'cc';ctx.fillText('DROP',p.x,p.y+TH/2+4);
+  }
+
+  // Scanlines
+  for(let sy=0;sy<CH;sy+=4){ctx.fillStyle='rgba(0,0,0,.04)';ctx.fillRect(0,sy,CW,1);}
+  // Vignette
+  const vig=ctx.createRadialGradient(CW/2,CH/2,CW*.25,CW/2,CH/2,CW*.85);
+  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.38)');
+  ctx.fillStyle=vig;ctx.fillRect(0,0,CW,CH);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  GAME STATE
+// ══════════════════════════════════════════════════════════════
+const G={
+  agents:[],tick:0,taskCount:0,uptime:0,alerts:0,
+  selectedAgent:null,selectedRoom:null,
+  dragging:false,dragAgent:null,dragGX:0,dragGY:0,
+  // Camera pan
+  panning:false,panStartX:0,panStartY:0,panStartCamX:0,panStartCamY:0,
+};
+
+// ══════════════════════════════════════════════════════════════
+//  UI RENDERING
+// ══════════════════════════════════════════════════════════════
+function agentCardHTML(ag,id){
+  const b=ag.badge;
+  const prog=ag.state==='working'||ag.state==='chatting'
+    ?`<div class="apb"><div class="apbf" style="width:${Math.min(99,(ag.taskProgress||0)*100).toFixed(0)}%;background:${ag.color}"></div></div>`:'';
+  return`<div class="acard${ag.selected?' selected':''}${ag.state==='working'?' working':''}" onclick="selectAgent('${ag.id}')">
+    <div class="at"><div class="adot" style="background:${ag.color};box-shadow:0 0 5px ${ag.color}88"></div><span class="aname">${ag.name}</span><span class="abg ${b.c}">${b.t}</span></div>
+    <div class="arole">${ag.role}</div>
+    <div class="atask">${ag.task||'Awaiting dispatch…'}</div>${prog}</div>`;
+}
+
+let uiCtr=0;
 function updateUI(){
   const isMob=window.innerWidth<768;
-  populateList(isMob?'mobile-agents':'agent-list');
+  // Roster
+  const roster=G.agents.map(ag=>agentCardHTML(ag)).join('');
+  document.getElementById('al').innerHTML=roster;
+  if(isMob)document.getElementById('ma').innerHTML=roster;
+  // Stats
   const active=G.agents.filter(a=>a.state!=='idle').length;
-  document.getElementById('sc-agents').textContent=`${active} ACTIVE`;
-  const te=document.getElementById('sc-tasks');if(te)te.textContent=G.taskCount;
-  const u=G.uptime,ue=document.getElementById('sc-uptime');
-  if(ue)ue.textContent=`${String(Math.floor(u/3600)).padStart(2,'0')}:${String(Math.floor(u%3600/60)).padStart(2,'0')}:${String(Math.floor(u%60)).padStart(2,'0')}`;
-  document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-US',{hour12:false});
-  if(curModal)document.getElementById('ms-tasks').textContent=curModal.stats.tasks;
+  document.getElementById('sc-a').textContent=`${active} ACTIVE`;
+  const te=document.getElementById('sc-t');if(te)te.textContent=G.taskCount;
+  const ae=document.getElementById('sc-al');if(ae)ae.textContent=G.alerts;
+  const u=G.uptime;
+  const ue=document.getElementById('sc-uptime');
+  if(ue)ue.textContent=`${String(Math.floor(u/3600)).padStart(2,'0')}:${String(Math.floor(u%60)).padStart(2,'0')}`;
+  document.getElementById('clk').textContent=new Date().toLocaleTimeString('en-US',{hour12:false});
+  // Selection panel
+  updateSelPanel();
 }
 
-// ══════════════════════════════════════════════════════
-// LOG
-// ══════════════════════════════════════════════════════
+function updateSelPanel(){
+  const sa=G.selectedAgent;
+  const sr=G.selectedRoom;
+  const isMob=window.innerWidth<768;
+  let html='';
+
+  if(sa){
+    const ag=G.agents.find(a=>a.id===sa);
+    if(ag){
+      const b=ag.badge;
+      const curRoom=getRoomById(ag.tRoom==='__home__'?ag.home:ag.tRoom);
+      const prog=ag.state==='working'?`<div class="sc-prog"><div class="sc-pf" style="width:${Math.min(99,(ag.taskProgress||0)*100).toFixed(0)}%;background:${ag.color}"></div></div>`:'';
+      html=`<div class="sel-card">
+        <div class="sc-head"><div class="sc-dot" style="background:${ag.color};box-shadow:0 0 6px ${ag.color}88"></div><span class="sc-name">${ag.name}</span><span class="sc-badge ${b.c}">${b.t}</span></div>
+        <div class="sc-body">
+          <div class="sc-row"><span class="sc-lbl">ROLE</span><span class="sc-val">${ag.role}</span></div>
+          <div class="sc-row"><span class="sc-lbl">LOCATION</span><span class="sc-val">${curRoom?.name||'Hallway'}</span></div>
+          <div class="sc-row"><span class="sc-lbl">TASKS DONE</span><span class="sc-val">${ag.tasksDone}</span></div>
+          <div class="sc-task">${ag.task||'Idle'}</div>${prog}
+        </div>
+        <div class="act-btns">
+          <button class="abtn primary" onclick="sendAgentHome('${ag.id}')">⌂ HOME</button>
+          <button class="abtn" onclick="openAgentModal('${ag.id}')">🔍 INSPECT</button>
+          <button class="abtn green" onclick="dispatchAgent('${ag.id}')">▶ DISPATCH</button>
+          <button class="abtn" onclick="makeChat('${ag.id}')">💬 CHAT</button>
+        </div>
+      </div>`;
+      // Send to room buttons
+      html+=`<div style="margin-top:6px"><div class="ph" style="margin-bottom:5px;padding:5px 10px">SEND TO ROOM</div>`;
+      ROOMS.slice(0,8).forEach(r=>{
+        html+=`<button class="abtn" style="width:100%;margin-bottom:3px;text-align:left;padding:5px 8px" onclick="sendAgentTo('${ag.id}','${r.id}')">${r.icon} ${r.name}</button>`;
+      });
+      html+='</div>';
+    }
+  } else if(sr){
+    const room=getRoomById(sr);
+    if(room){
+      const agentsInRoom=G.agents.filter(ag=>{
+        const rid=ag.tRoom==='__home__'?ag.home:ag.tRoom;
+        return rid===sr;
+      });
+      html=`<div class="sel-card">
+        <div class="sc-head" style="padding:10px"><div style="font-size:20px">${room.icon||'🏥'}</div><div style="flex:1;margin-left:8px"><div class="sc-name">${room.name}</div><div style="font-size:8px;color:var(--lo);margin-top:1px;letter-spacing:1px">${room.type.toUpperCase()}</div></div></div>
+        <div class="sc-body">
+          <div class="sc-row"><span class="sc-lbl">SIZE</span><span class="sc-val">${room.x2-room.x1+1}×${room.y2-room.y1+1} tiles</span></div>
+          ${room.patient?`<div class="sc-row"><span class="sc-lbl">PATIENT</span><span class="sc-val">${room.patient}</span></div>`:''}
+          <div class="sc-row"><span class="sc-lbl">AGENTS PRESENT</span><span class="sc-val">${agentsInRoom.length}</span></div>
+          ${agentsInRoom.length?`<div class="rc-agents">${agentsInRoom.map(a=>`<span style="color:${a.color}">● ${a.name}</span>`).join('  ')}</div>`:''}
+        </div>
+        <div class="act-btns">
+          <button class="abtn primary" onclick="openRoomModal('${room.id}')">🔍 OPEN ROOM</button>
+        </div>
+      </div>`;
+    }
+  } else {
+    html=`<div class="sel-empty">Click any agent<br>or room to inspect</div>`;
+  }
+
+  document.getElementById('sel-panel').innerHTML=html;
+  if(isMob)document.getElementById('msel').innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  MOBILE TABS
+// ══════════════════════════════════════════════════════════════
+function switchTab(t){
+  document.querySelectorAll('.mt').forEach(el=>el.classList.toggle('active',el.dataset.t===t));
+  ['ma','mlog','msel'].forEach(id=>{
+    const el=document.getElementById(id);if(el){el.style.display=el.id==='m'+t||el.id===('m'+t==='msel'?'msel':'')&&t==='sel'?'block':'none';}
+  });
+  const ma=document.getElementById('ma');const ml=document.getElementById('mlog');const ms=document.getElementById('msel');
+  if(ma)ma.style.display=t==='a'?'block':'none';
+  if(ml)ml.style.display=t==='log'?'block':'none';
+  if(ms)ms.style.display=t==='sel'?'block':'none';
+  // re-add .active class for CSS scroll
+  [ma,ml,ms].forEach(el=>{if(el)el.classList.toggle('active',el.style.display==='block');});
+}
+
+// ══════════════════════════════════════════════════════════════
+//  LOG
+// ══════════════════════════════════════════════════════════════
 function addLog(name,color,msg){
   const t=new Date().toLocaleTimeString('en-US',{hour12:false});
-  function row(cls,tCls,aCls,mCls){
-    const r=document.createElement('div');r.className=cls;
-    r.innerHTML=`<span class="${tCls}">${t}</span><span class="${aCls}" style="color:${color}">${name}</span><span class="${mCls}">${msg}</span>`;
-    return r;
+  const html=`<div class="le"><span class="lt">${t}</span><span class="lag" style="color:${color}">${name}</span><span class="lmsg">${msg}</span></div>`;
+  const dl=document.getElementById('ll');
+  dl.insertAdjacentHTML('afterbegin',html);
+  while(dl.children.length>100)dl.removeChild(dl.lastChild);
+  const ml=document.getElementById('mlog');
+  if(ml){ml.insertAdjacentHTML('afterbegin',html.replace('le','le').replace('lt','lt').replace('lag','lag').replace('lmsg','lmsg'));
+  while(ml.children.length>60)ml.removeChild(ml.lastChild);}
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SELECTION
+// ══════════════════════════════════════════════════════════════
+function selectAgent(id){
+  G.agents.forEach(a=>a.selected=a.id===id);
+  G.selectedAgent=id;G.selectedRoom=null;
+  updateUI();
+  focusAgent(id);
+}
+function selectRoom(id){
+  G.agents.forEach(a=>a.selected=false);
+  G.selectedAgent=null;G.selectedRoom=id;
+  updateUI();
+}
+function clearSelection(){
+  G.agents.forEach(a=>a.selected=false);
+  G.selectedAgent=null;G.selectedRoom=null;
+  updateUI();
+}
+
+function focusAgent(id){
+  const ag=G.agents.find(a=>a.id===id);if(!ag)return;
+  const sp=ts(ag.x,ag.y);
+  const targetCamX=CW/2-sp.x+cam.x;
+  const targetCamY=CH/2-sp.y+cam.y;
+  // Smooth pan
+  const steps=20;let step=0;
+  const sx=cam.x,sy=cam.y;
+  const dx=(targetCamX)/steps,dy=(targetCamY)/steps;
+  function pan(){if(step++<steps){cam.x=sx+dx*step;cam.y=sy+dy*step;requestAnimationFrame(pan);}}
+  pan();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ACTION FUNCTIONS (callable from UI buttons)
+// ══════════════════════════════════════════════════════════════
+function sendAgentHome(id){const ag=G.agents.find(a=>a.id===id);if(ag){ag.goHome();addLog(ag.name,ag.color,'→ Returning to home station');updateUI();}}
+function dispatchAgent(id){const ag=G.agents.find(a=>a.id===id);if(ag){ag.dispatch();addLog(ag.name,ag.color,'▶ Manual dispatch triggered');updateUI();}}
+function sendAgentTo(id,roomId){
+  const ag=G.agents.find(a=>a.id===id);const room=getRoomById(roomId);
+  if(ag&&room){ag.sendTo(roomId);ag.flash();addLog(ag.name,ag.color,`→ Dispatched to ${room.name}`);updateUI();}
+}
+function makeChat(id){
+  const ag=G.agents.find(a=>a.id===id);if(!ag)return;
+  const msgs=['Running clinical workflow…','Syncing patient data…','Cross-referencing records…','Alert: flagging for review','Processing NLP pipeline…'];
+  ag.say(msgs[Math.floor(Math.random()*msgs.length)]);
+}
+function openAgentModal(id){
+  const ag=G.agents.find(a=>a.id===id);if(!ag)return;
+  const room=getRoomById(ag.home);
+  openRoomModal(ag.home,ag);
+}
+function openRoomModal(roomId,forceAgent){
+  const room=getRoomById(roomId);
+  const sd=SD[roomId];if(!room)return;
+  const ag=forceAgent||G.agents.find(a=>a.home===roomId)||G.agents.find(a=>{const rid=a.tRoom==='__home__'?a.home:a.tRoom;return rid===roomId;});
+  curModal={roomId,sd};
+  document.getElementById('modal').classList.remove('h');
+  document.getElementById('m-ico').textContent=room.icon||'🏥';
+  document.getElementById('m-title').textContent=room.name;
+  document.getElementById('m-sub').textContent=sd?.sub||room.type;
+  const row=document.getElementById('m-agent-row');
+  if(ag){
+    row.style.display='flex';
+    document.getElementById('m-dot').style.cssText=`background:${ag.color};box-shadow:0 0 6px ${ag.color};`;
+    const mn=document.getElementById('m-aname');mn.textContent=`${ag.name} — ${ag.role}`;mn.style.color=ag.color;
+  } else row.style.display='none';
+  document.getElementById('ms-t').textContent=sd?.stats.tasks||0;
+  document.getElementById('ms-a').textContent=sd?.stats.acc||'—';
+  document.getElementById('ms-l').textContent=sd?.stats.lat||'—';
+  const btn=document.getElementById('run-btn');btn.disabled=false;btn.textContent='▶ DISPATCH TASK';
+  simulateOutput(roomId);
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.add('h');
+  if(typeInt){clearTimeout(typeInt);typeInt=null;}curModal=null;
+}
+
+let curModal=null,typeInt=null,outIdx={};
+function simulateOutput(roomId){
+  if(typeInt){clearTimeout(typeInt);typeInt=null;}
+  const sd=SD[roomId];if(!sd)return;
+  if(!(roomId in outIdx))outIdx[roomId]=0;
+  const out=document.getElementById('m-out');
+  const text=sd.outs[outIdx[roomId]++%sd.outs.length];
+  out.textContent='';let i=0;
+  function next(){
+    if(i<text.length){out.textContent+=text[i++];out.scrollTop=out.scrollHeight;typeInt=setTimeout(next,14);}
+    else{typeInt=setTimeout(()=>{if(curModal&&curModal.roomId===roomId)simulateOutput(roomId);},3500);}
   }
-  const dl=document.getElementById('log-list');
-  dl.insertBefore(row('lentry','ltime','lagent','lmsg'),dl.firstChild);
-  while(dl.children.length>80)dl.removeChild(dl.lastChild);
-  const ml=document.getElementById('mobile-log');
-  ml.insertBefore(row('lentry','ltime','lagent','lmsg'),ml.firstChild);
-  while(ml.children.length>60)ml.removeChild(ml.lastChild);
+  next();
 }
 
-// ══════════════════════════════════════════════════════
-// MOBILE TABS + DRAG
-// ══════════════════════════════════════════════════════
-function switchTab(tab){
-  document.querySelectorAll('.mtab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
-  document.getElementById('mobile-agents').classList.toggle('active',tab==='agents');
-  document.getElementById('mobile-log').classList.toggle('active',tab==='log');
+function runTask(){
+  if(!curModal)return;
+  const{roomId}=curModal;const sd=SD[roomId];
+  const btn=document.getElementById('run-btn');btn.disabled=true;btn.textContent='⟳ DISPATCHING…';
+  if(typeInt){clearTimeout(typeInt);typeInt=null;}
+  const ag=G.agents.find(a=>a.home===roomId);
+  if(ag){ag.flash();ag.say('Running task…');}
+  if(sd){sd.stats.tasks++;G.taskCount++;}
+  document.getElementById('ms-t').textContent=sd?.stats.tasks||0;
+  addLog(ag?ag.name:'SYS',ag?ag.color:'#00d4ff',`Manual task dispatch → ${getRoomById(roomId)?.name}`);
+  setTimeout(()=>{btn.disabled=false;btn.textContent='▶ DISPATCH TASK';simulateOutput(roomId);},1200);
 }
 
-(function initDrag(){
-  const btm=document.getElementById('mobile-btm');
-  const dh=document.getElementById('drag-handle');
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
+
+// ══════════════════════════════════════════════════════════════
+//  CONTEXT MENU
+// ══════════════════════════════════════════════════════════════
+const ctxEl=document.getElementById('ctx');
+
+function showCtx(x,y,items,title,dotColor){
+  let html=`<div class="ctx-hd">`;
+  if(dotColor)html+=`<div class="ctx-dot" style="background:${dotColor}"></div>`;
+  html+=`${title}</div>`;
+  items.forEach(it=>{
+    if(it==='sep'){html+='<div class="ctx-sep"></div>';return;}
+    html+=`<div class="ctx-item${it.cls?' '+it.cls:''}" onclick="${it.fn}"><span class="ctx-ico">${it.ico}</span>${it.label}${it.sub?`<span class="ctx-sub">${it.sub}</span>`:''}`;
+    html+='</div>';
+  });
+  ctxEl.innerHTML=html;
+  ctxEl.style.display='block';
+  const margin=8;
+  let lx=x+margin,ly=y+margin;
+  if(lx+200>window.innerWidth)lx=x-200-margin;
+  if(ly+ctxEl.offsetHeight>window.innerHeight)ly=y-ctxEl.offsetHeight-margin;
+  ctxEl.style.left=lx+'px';ctxEl.style.top=ly+'px';
+}
+function hideCtx(){ctxEl.style.display='none';}
+document.addEventListener('click',e=>{if(!ctxEl.contains(e.target))hideCtx();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();closeModal();clearSelection();}});
+
+function agentCtxMenu(ag,x,y){
+  const curRoom=getRoomById(ag.tRoom==='__home__'?ag.home:ag.tRoom);
+  const items=[
+    {ico:'🔍',label:'Inspect Station',fn:`openAgentModal('${ag.id}');hideCtx();`},
+    {ico:'⌂', label:'Send Home',fn:`sendAgentHome('${ag.id}');hideCtx();`},
+    {ico:'▶', label:'Dispatch Task',fn:`dispatchAgent('${ag.id}');hideCtx();`},
+    {ico:'💬',label:'Send Chat',fn:`makeChat('${ag.id}');hideCtx();`},
+    'sep',
+    {ico:'📊',label:'Send to Conference',fn:`sendAgentTo('${ag.id}','conference');hideCtx();`},
+    {ico:'🏥',label:'Send to Nurses Stn',fn:`sendAgentTo('${ag.id}','nurses_stn');hideCtx();`},
+    {ico:'🛏️',label:'Send to Patient Rm',fn:`sendAgentTo('${ag.id}','pt101');hideCtx();`},
+    'sep',
+    {ico:'🔴',label:'Emergency Dispatch',cls:'grn',fn:`emergencyDispatch('${ag.id}');hideCtx();`},
+    {ico:'🎯',label:'Focus Camera',fn:`selectAgent('${ag.id}');focusAgent('${ag.id}');hideCtx();`},
+  ];
+  showCtx(x,y,items,ag.name,ag.color);
+}
+
+function roomCtxMenu(room,x,y){
+  const items=[
+    {ico:'🔍',label:'Inspect Room',fn:`openRoomModal('${room.id}');hideCtx();`},
+    {ico:'📡',label:'Select Room',fn:`selectRoom('${room.id}');hideCtx();`},
+    'sep',
+    ...G.agents.map(ag=>({ico:'👤',label:`Send ${ag.name} here`,sub:ag.role,fn:`sendAgentTo('${ag.id}','${room.id}');hideCtx();`,cls:''})),
+  ];
+  showCtx(x,y,items,`${room.icon} ${room.name}`,room.color);
+}
+
+function emergencyDispatch(agId){
+  const ag=G.agents.find(a=>a.id===agId);if(!ag)return;
+  ag.dispatch();ag.flash();ag.say('⚠ Emergency protocol!');G.alerts++;
+  addLog(ag.name,ag.color,'⚠ EMERGENCY dispatch triggered');updateUI();
+  // Spawn a packet from this agent to another
+  const target=G.agents.find(a=>a.id!==agId);
+  if(target)spawnPacket(ag,target,ag.color);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INPUT: DRAG, CLICK, RIGHTCLICK, PAN, TOUCH
+// ══════════════════════════════════════════════════════════════
+let mouseX=0,mouseY=0,mouseDown=false;
+let dragStartX=0,dragStartY=0;
+const DRAG_THRESHOLD=6;
+
+function getCanvasPos(e){
+  const r=canvas.getBoundingClientRect();
+  if(e.touches)return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
+  return{x:e.clientX-r.left,y:e.clientY-r.top};
+}
+
+function hitAgent(mx,my){
+  const hitR=Math.max(16,TW*.28);
+  let best=null,bd=Infinity;
+  for(const ag of G.agents){
+    const sp=ts(ag.x,ag.y);
+    const d=Math.hypot(mx-sp.x,my-(sp.y+TH/2-TH*.3));
+    if(d<hitR&&d<bd){bd=d;best=ag;}
+  }
+  return best;
+}
+
+function hitRoom(mx,my){
+  // Convert screen→grid and find room
+  const{gx,gy}=sg(mx,my);
+  const igx=Math.floor(gx),igy=Math.floor(gy);
+  return getRoomAt(igx,igy)||null;
+}
+
+canvas.addEventListener('mousedown',e=>{
+  mouseDown=true;
+  const{x,y}=getCanvasPos(e);
+  dragStartX=x;dragStartY=y;
+  mouseX=x;mouseY=y;
+
+  if(e.button===2){e.preventDefault();return;}
+
+  const ag=hitAgent(x,y);
+  if(ag){
+    selectAgent(ag.id);
+    G.dragAgent=ag;
+    G.dragging=false; // will become true on move
+  } else {
+    // Start pan
+    G.panning=true;
+    G.panStartX=x;G.panStartY=y;
+    G.panStartCamX=cam.x;G.panStartCamY=cam.y;
+  }
+});
+
+canvas.addEventListener('mousemove',e=>{
+  const{x,y}=getCanvasPos(e);
+  mouseX=x;mouseY=y;
+
+  // Tooltip
+  const tt=document.getElementById('tt');
+  const ag=hitAgent(x,y);
+  const room=hitRoom(x,y);
+  if(ag){
+    tt.textContent=`${ag.name} — ${ag.role} [${ag.badge.t}]`;
+    tt.style.display='block';tt.style.left=(x+10)+'px';tt.style.top=(y-24)+'px';
+    canvas.className='pointer';
+  } else if(room){
+    tt.textContent=`${room.icon||''} ${room.name}`;
+    tt.style.display='block';tt.style.left=(x+10)+'px';tt.style.top=(y-24)+'px';
+    canvas.className='pointer';
+  } else{tt.style.display='none';canvas.className=mouseDown?'grabbing':'grab';}
+
+  if(!mouseDown)return;
+
+  const dist=Math.hypot(x-dragStartX,y-dragStartY);
+
+  // Agent drag
+  if(G.dragAgent&&dist>DRAG_THRESHOLD){
+    G.dragging=true;
+    canvas.className='move-cur';
+    const{gx,gy}=sg(x,y);
+    G.dragGX=gx;G.dragGY=gy;
+  }
+  // Camera pan
+  else if(G.panning&&!G.dragAgent){
+    cam.x=G.panStartCamX+(x-G.panStartX);
+    cam.y=G.panStartCamY+(y-G.panStartY);
+  }
+});
+
+canvas.addEventListener('mouseup',e=>{
+  const{x,y}=getCanvasPos(e);
+  mouseDown=false;
+
+  if(G.dragging&&G.dragAgent){
+    // Drop agent at grid position
+    const ag=G.dragAgent;
+    const{gx,gy}=sg(x,y);
+    const igx=Math.floor(gx),igy=Math.floor(gy);
+    const room=getRoomAt(igx,igy);
+    if(room&&room.id!==ag.tRoom){
+      ag.sendTo(room.id);
+      ag.flash();
+      addLog(ag.name,ag.color,`→ Dropped into ${room.name}`);
+      updateUI();
+    } else if(!room){
+      // Drop in hallway — wander
+      ag.tx=gx;ag.ty=gy;ag.tRoom='__hall__';ag.state='walking';
+      addLog(ag.name,ag.color,'→ Moving to hallway');
+    }
+    G.dragging=false;G.dragAgent=null;
+    canvas.className='grab';
+    return;
+  }
+
+  G.dragging=false;G.dragAgent=null;
+  G.panning=false;
+
+  // Click (no significant movement)
+  const dist=Math.hypot(x-dragStartX,y-dragStartY);
+  if(dist<DRAG_THRESHOLD){
+    const ag=hitAgent(x,y);
+    if(ag){selectAgent(ag.id);return;}
+    const room=hitRoom(x,y);
+    if(room){selectRoom(room.id);return;}
+    clearSelection();
+  }
+  canvas.className='grab';
+});
+
+canvas.addEventListener('contextmenu',e=>{
+  e.preventDefault();
+  const{x,y}=getCanvasPos(e);
+  const ag=hitAgent(x,y);
+  if(ag){agentCtxMenu(ag,e.clientX,e.clientY);return;}
+  const room=hitRoom(x,y);
+  if(room){roomCtxMenu(room,e.clientX,e.clientY);}
+});
+
+// Touch events
+let lastTap=0,touchId=null,touchStartX=0,touchStartY=0,touchPanStart=null;
+canvas.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  const{x,y}=getCanvasPos(e);
+  touchStartX=x;touchStartY=y;touchId=e.touches[0].identifier;
+  const ag=hitAgent(x,y);
+  if(ag){G.dragAgent=ag;G.dragging=false;selectAgent(ag.id);}
+  else{
+    G.panning=true;G.panStartX=x;G.panStartY=y;G.panStartCamX=cam.x;G.panStartCamY=cam.y;
+  }
+},{passive:false});
+
+canvas.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  const{x,y}=getCanvasPos(e);
+  const dist=Math.hypot(x-touchStartX,y-touchStartY);
+  if(G.dragAgent&&dist>8){
+    G.dragging=true;
+    const{gx,gy}=sg(x,y);G.dragGX=gx;G.dragGY=gy;
+  } else if(G.panning&&!G.dragAgent){
+    cam.x=G.panStartCamX+(x-G.panStartX);
+    cam.y=G.panStartCamY+(y-G.panStartY);
+  }
+},{passive:false});
+
+canvas.addEventListener('touchend',e=>{
+  e.preventDefault();
+  const touch=e.changedTouches[0];
+  const r=canvas.getBoundingClientRect();
+  const x=touch.clientX-r.left,y=touch.clientY-r.top;
+
+  if(G.dragging&&G.dragAgent){
+    const ag=G.dragAgent;
+    const{gx,gy}=sg(x,y);
+    const igx=Math.floor(gx),igy=Math.floor(gy);
+    const room=getRoomAt(igx,igy);
+    if(room){ag.sendTo(room.id);ag.flash();addLog(ag.name,ag.color,`→ Dropped into ${room.name}`);}
+    G.dragging=false;G.dragAgent=null;G.panning=false;updateUI();
+    return;
+  }
+  G.dragging=false;G.dragAgent=null;G.panning=false;
+
+  const dist=Math.hypot(x-touchStartX,y-touchStartY);
+  if(dist<10){
+    // Long press → context menu (handled via 500ms timer)
+    const now=Date.now();
+    if(now-lastTap<300){
+      // Double tap → open modal
+      const room=hitRoom(x,y);if(room)openRoomModal(room.id);
+    } else {
+      const ag=hitAgent(x,y);
+      if(ag)selectAgent(ag.id);
+      else{const room=hitRoom(x,y);if(room)selectRoom(room.id);else clearSelection();}
+    }
+    lastTap=now;
+  }
+},{passive:false});
+
+// Mobile drag handle
+(function(){
+  const btm=document.getElementById('mbtm'),dh=document.getElementById('dh');
   let drag=false,sy=0,sh=0;
-  const MIN=88;
-  const getMax=()=>Math.min(window.innerHeight*.7,400);
-
-  function start(e){if(window.innerWidth>=768)return;drag=true;sy=e.touches?e.touches[0].clientY:e.clientY;sh=btm.offsetHeight;e.preventDefault();}
-  function move(e){
-    if(!drag)return;e.preventDefault&&e.preventDefault();
-    const cy=e.touches?e.touches[0].clientY:e.clientY;
-    const nh=Math.min(getMax(),Math.max(MIN,sh+(sy-cy)));
-    btm.style.height=nh+'px';
-    const wrap=document.getElementById('canvas-wrap');
-    CW=wrap.clientWidth;CH=wrap.clientHeight;canvas.width=CW;canvas.height=CH;
-    OX=CW/2;OY=38;
-  }
-  function end(){drag=false;}
+  const MIN=80,getMax=()=>Math.min(window.innerHeight*.7,380);
+  const start=e=>{if(window.innerWidth>=768)return;drag=true;sy=e.touches?e.touches[0].clientY:e.clientY;sh=btm.offsetHeight;e.preventDefault?.();};
+  const move=e=>{if(!drag)return;e.preventDefault?.();const cy=e.touches?e.touches[0].clientY:e.clientY;btm.style.height=Math.min(getMax(),Math.max(MIN,sh+(sy-cy)))+'px';doResize();};
+  const end=()=>{drag=false;};
   dh.addEventListener('touchstart',start,{passive:false});dh.addEventListener('mousedown',start);
   document.addEventListener('touchmove',move,{passive:false});document.addEventListener('touchend',end);
   document.addEventListener('mousemove',move);document.addEventListener('mouseup',end);
 })();
 
-// ══════════════════════════════════════════════════════
-// MODAL
-// ══════════════════════════════════════════════════════
-let curModal=null,typeInt=null,outputIdx={};
-
-function openModal(st,ag){
-  if(!ag)ag=G.agents.find(a=>a.home===st.id);
-  curModal=st;
-  document.getElementById('modal').classList.remove('hidden');
-  document.getElementById('m-icon').textContent=st.icon;
-  document.getElementById('m-title').textContent=st.name;
-  document.getElementById('m-sub').textContent=st.taskLabel;
-  if(ag){
-    const d=document.getElementById('m-adot');d.style.background=ag.color;d.style.boxShadow=`0 0 6px ${ag.color}`;
-    const n=document.getElementById('m-aname');n.textContent=`${ag.name} — ${ag.role}`;n.style.color=ag.color;
+// ══════════════════════════════════════════════════════════════
+//  COLLAB PACKET SPAWNER
+// ══════════════════════════════════════════════════════════════
+function maybeSpawnPacket(){
+  // Occasionally spawn a data packet between collaborating agents
+  if(G.tick%90!==0)return;
+  const cb=COLLAB[Math.floor(Math.random()*COLLAB.length)];
+  const a=G.agents.find(ag=>ag.id===cb.a);
+  const b=G.agents.find(ag=>ag.id===cb.b);
+  if(a&&b&&(a.state==='working'||b.state==='working')){
+    spawnPacket(a,b,a.color);
+    if(Math.random()<.3){a.say(cb.msg.split('→')[0].trim());}
   }
-  document.getElementById('ms-tasks').textContent=st.stats.tasks;
-  document.getElementById('ms-acc').textContent=st.stats.acc;
-  document.getElementById('ms-lat').textContent=st.stats.lat;
-  const btn=document.getElementById('run-btn');btn.disabled=false;btn.textContent='▶ DISPATCH NEW TASK';
-  simulateOutput(st);
-}
-function closeModal(){
-  document.getElementById('modal').classList.add('hidden');
-  if(typeInt){clearTimeout(typeInt);typeInt=null;}curModal=null;
-}
-function simulateOutput(st){
-  if(typeInt){clearTimeout(typeInt);typeInt=null;}
-  if(!(st.id in outputIdx))outputIdx[st.id]=0;
-  const out=document.getElementById('m-out');
-  const text=st.outputs[outputIdx[st.id]++%st.outputs.length];
-  out.textContent='';let i=0;
-  function next(){
-    if(i<text.length){out.textContent+=text[i++];out.scrollTop=out.scrollHeight;typeInt=setTimeout(next,13);}
-    else{typeInt=setTimeout(()=>{if(curModal===st)simulateOutput(st);},3200);}
-  }
-  next();
-}
-function runTask(){
-  if(!curModal)return;
-  const btn=document.getElementById('run-btn');btn.disabled=true;btn.textContent='⟳ DISPATCHING...';
-  if(typeInt){clearTimeout(typeInt);typeInt=null;}
-  const ag=G.agents.find(a=>a.home===curModal.id);
-  addLog(ag?ag.name:'SYS',ag?ag.color:'#00d4ff',`Manual dispatch → ${curModal.name}`);
-  curModal.stats.tasks++;G.taskCount++;
-  document.getElementById('ms-tasks').textContent=curModal.stats.tasks;
-  setTimeout(()=>{btn.disabled=false;btn.textContent='▶ DISPATCH NEW TASK';simulateOutput(curModal);},1200);
 }
 
-document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
-
-// ══════════════════════════════════════════════════════
-// INPUT
-// ══════════════════════════════════════════════════════
-function hitTest(mx,my){
-  let best=null,bestD=Infinity;
-  const R=Math.max(42,TW*.75);
-  for(const st of STATIONS){
-    const s=ts(st.gx,st.gy);const d=Math.hypot(mx-s.x,my-(s.y+TH/2-8));
-    if(d<R&&d<bestD){bestD=d;best=st;}
-  }
-  return best;
-}
-
-canvas.addEventListener('click',e=>{
-  const r=canvas.getBoundingClientRect();const f=hitTest(e.clientX-r.left,e.clientY-r.top);if(f)openModal(f);
-});
-
-let lastTap=0;
-canvas.addEventListener('touchend',e=>{
-  e.preventDefault();
-  if(e.changedTouches.length!==1)return;
-  const now=Date.now();if(now-lastTap<300)return;lastTap=now;
-  const r=canvas.getBoundingClientRect();const t=e.changedTouches[0];
-  const f=hitTest(t.clientX-r.left,t.clientY-r.top);if(f)openModal(f);
-},{passive:false});
-
-canvas.addEventListener('mousemove',e=>{
-  const r=canvas.getBoundingClientRect();const tt=document.getElementById('tooltip');
-  const f=hitTest(e.clientX-r.left,e.clientY-r.top);
-  if(f){tt.textContent=`${f.icon} ${f.name}`;tt.style.display='block';tt.style.left=(e.clientX-r.left+12)+'px';tt.style.top=(e.clientY-r.top-24)+'px';canvas.style.cursor='pointer';}
-  else{tt.style.display='none';canvas.style.cursor='crosshair';}
-});
-
-// ══════════════════════════════════════════════════════
-// LOOP
-// ══════════════════════════════════════════════════════
-let lastSec=0;
+// ══════════════════════════════════════════════════════════════
+//  MAIN LOOP
+// ══════════════════════════════════════════════════════════════
+let lastSec=0,uiFrame=0;
 function loop(ts){
   G.tick++;
   G.agents.forEach(a=>a.update());
+  updatePackets();
+  maybeSpawnPacket();
   render();
-  if(++uiTick>=8){uiTick=0;updateUI();}
+  if(++uiFrame>=10){uiFrame=0;updateUI();}
   if(ts-lastSec>1000){G.uptime++;lastSec=ts;}
   requestAnimationFrame(loop);
 }
 
-// ══════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
 function init(){
-  resize();
-  window.addEventListener('resize',()=>{resize();updateUI();});
-  window.addEventListener('orientationchange',()=>setTimeout(()=>{resize();updateUI();},250));
+  doResize();
+  window.addEventListener('resize',()=>{doResize();updateUI();});
+  window.addEventListener('orientationchange',()=>setTimeout(()=>{doResize();updateUI();},250));
   G.agents=AGENT_DEFS.map(d=>new Agent(d));
-  G.agents.forEach((ag,i)=>{ag.idleTimer=40+i*50;});
-  addLog('SYSTEM','#00d4ff','Lumen Clinical AI Dept — v0.1 initialized');
-  addLog('SYSTEM','#00d4ff','6 agents online · 6 stations active');
-  addLog('SYSTEM','#00ff9f','Tap any station to inspect live AI output');
+  G.agents.forEach((ag,i)=>ag.idleTimer=30+i*45);
+  // roundRect polyfill
+  if(!CanvasRenderingContext2D.prototype.roundRect){
+    CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+      this.beginPath();this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.quadraticCurveTo(x+w,y,x+w,y+r);
+      this.lineTo(x+w,y+h-r);this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      this.lineTo(x+r,y+h);this.quadraticCurveTo(x,y+h,x,y+h-r);
+      this.lineTo(x,y+r);this.quadraticCurveTo(x,y,x+r,y);this.closePath();
+    };
+  }
+  addLog('SYSTEM','#00d4ff','Lumen Clinical AI Hospital — v0.2 initialized');
+  addLog('SYSTEM','#00d4ff','6 agents · 19 rooms · Full interaction system active');
+  addLog('SYSTEM','#00ff9f','DRAG agents between rooms · RIGHT-CLICK for actions · CLICK to inspect');
   updateUI();
   requestAnimationFrame(loop);
 }
-
-if(!CanvasRenderingContext2D.prototype.roundRect){
-  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
-    this.beginPath();this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.quadraticCurveTo(x+w,y,x+w,y+r);
-    this.lineTo(x+w,y+h-r);this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-    this.lineTo(x+r,y+h);this.quadraticCurveTo(x,y+h,x,y+h-r);
-    this.lineTo(x,y+r);this.quadraticCurveTo(x,y,x+r,y);this.closePath();
-  };
-}
-
 init();
 </script>
 </body>
